@@ -14,6 +14,11 @@ Manter o codigo coeso, testavel e extensivel usando principios SOLID.
 - Reduzir acoplamento entre casos de uso e implementacoes de infraestrutura.
 - Refatorar de forma incremental sem alterar comportamento externo.
 
+## Contexto Especifico deste Projeto
+- Evitar que regras de sincronizacao em tempo real fiquem espalhadas em controllers/adapters.
+- Manter logica de compartilhamento de listas concentrada em casos de uso e dominio.
+- Garantir separacao clara entre regras de negocio e detalhes de WebSocket/Flutter.
+
 ## Checklist SOLID
 - **S**: Um unico motivo de mudanca por classe.
 - **O**: Novo comportamento por extensao, nao por edicoes com condicionais pesadas.

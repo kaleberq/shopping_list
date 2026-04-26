@@ -14,6 +14,12 @@ Implementar features por meio do ciclo Vermelho-Verde-Refatorar com feedback rap
 - Implementar somente o minimo de codigo de producao para passar nos testes.
 - Refatorar com seguranca mantendo a suite verde.
 
+## Contexto Especifico deste Projeto
+- Priorizar cenarios de lista compartilhada em tempo real.
+- Cobrir testes para sincronizacao de atualizacao entre dispositivos.
+- Validar fluxo de item com descricao, preco e data de validade opcional.
+- Incluir testes para alteracao de preco antes e durante a compra.
+
 ## Ciclo TDD
 1. **Vermelho**: Adicionar um teste que falha com nome descritivo.
 2. **Verde**: Implementar o minimo para passar.

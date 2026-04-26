@@ -14,6 +14,12 @@ Garantir que cada feature mantenha fronteiras claras entre dominio, aplicacao e 
 - Manter regras de negocio no dominio/aplicacao e detalhes de Spring na infraestrutura.
 - Definir portas e adaptadores para preocupacoes externas (banco, mensageria, websocket, http).
 
+## Contexto Especifico deste Projeto
+- Backend de lista de compras para cliente Flutter.
+- Listas compartilhadas com sincronizacao em tempo real entre dispositivos.
+- Uso de WebSocket como adaptador de entrada para propagacao de alteracoes.
+- Casos de uso devem gerar eventos para atualizacao dos clientes conectados.
+
 ## Estrutura Padrao
 Use esta organizacao por feature:
 

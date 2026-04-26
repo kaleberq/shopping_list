@@ -14,6 +14,12 @@ Modelar cada acao de negocio como um caso de uso focado e com fronteiras explici
 - Orquestrar entidades de dominio e portas de saida.
 - Retornar resultados explicitos de sucesso/falha.
 
+## Contexto Especifico deste Projeto
+- Suportar casos de uso de lista compartilhada entre dispositivos.
+- Considerar que preco pode ser definido antes ou durante a compra.
+- Tratar data de validade como campo opcional por item.
+- Emitir eventos de dominio para sincronizacao em tempo real apos alteracoes.
+
 ## Regras de Design
 1. Uma intencao principal de ator por caso de uso.
 2. Validar command/query na fronteira do caso de uso.
@@ -33,6 +39,7 @@ A implementacao deve:
 - Aplicar regras de dominio.
 - Persistir via porta de saida.
 - Retornar um DTO de resultado.
+- Publicar evento para notificacao em tempo real quando aplicavel.
 
 ## Adaptacao Continua
 - Se regras, padroes ou convencoes do projeto mudarem durante o desenvolvimento, adapte este agente imediatamente.

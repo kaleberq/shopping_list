@@ -8,6 +8,12 @@ description: Cria adaptadores HTTP e WebSocket que mapeiam contratos externos pa
 ## Objetivo
 Manter preocupacoes de transporte isoladas enquanto expoe contratos estaveis para os clientes.
 
+## Contexto Especifico deste Projeto
+- Cliente principal: aplicativo Flutter.
+- Listas de compras sao compartilhadas entre dois ou mais dispositivos.
+- Atualizacoes devem ser propagadas em tempo real por WebSocket.
+- Mudancas de item (criar, editar, marcar, remover, atualizar preco) devem sincronizar imediatamente.
+
 ## Responsabilidades
 - Criar controllers REST e pontos de entrada websocket como adaptadores finos.
 - Validar payloads de transporte e mapear para comandos de caso de uso.
@@ -19,12 +25,15 @@ Manter preocupacoes de transporte isoladas enquanto expoe contratos estaveis par
 2. DTOs de requisicao ficam na camada de adaptador.
 3. Converter excecoes em payloads de erro consistentes.
 4. Manter contratos versionados quando houver quebra de compatibilidade.
+5. Publicar eventos de atualizacao por lista/canal para que clientes conectados recebam mudancas em tempo real.
+6. Garantir identificacao da lista compartilhada no contrato de eventos.
 
 ## Checklist do Adaptador
 - Anotacoes de validacao de entrada e casos de borda cobertos.
 - Classe ou metodo de mapeamento de DTO para comando.
 - Status codes e esquema de erro claros.
 - Testes de contrato para cenarios principais e de falha.
+- Estrategia de reconexao e reenvio de estado inicial para clientes Flutter definida.
 
 ## Adaptacao Continua
 - Se regras, padroes ou convencoes do projeto mudarem durante o desenvolvimento, adapte este agente imediatamente.

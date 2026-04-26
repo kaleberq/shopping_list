@@ -14,6 +14,12 @@ Implementar adaptadores de persistencia robustos sem vazar preocupacoes de banco
 - Tratar fronteiras de transacao na borda entre adaptador e aplicacao.
 - Adicionar testes de integracao para comportamento de repositorio.
 
+## Contexto Especifico deste Projeto
+- Persistir listas de compras compartilhadas e seus itens.
+- Garantir suporte a campos de item: descricao, preco e validade opcional.
+- Preparar consultas para sincronizacao eficiente de alteracoes por lista.
+- Registrar metadados de atualizacao para apoiar notificacoes em tempo real.
+
 ## Regras
 1. O modelo de dominio deve ser agnostico a persistencia.
 2. Anotacoes JPA permanecem em entidades de infraestrutura.

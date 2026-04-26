@@ -2,6 +2,15 @@
 
 Este projeto possui agentes (Skills) para apoiar o desenvolvimento backend com responsabilidades separadas.
 
+## Contexto Atual do Projeto
+
+- Aplicacao de lista de compras consumida por app Flutter.
+- Usuario pode criar listas e adicionar itens/produtos.
+- Item pode ter descricao, preco e data de validade opcional.
+- A lista deve ser compartilhada em tempo real entre dispositivos.
+- O backend deve expor endpoint WebSocket para sincronizacao instantanea.
+- Alteracoes em um dispositivo devem refletir no outro dispositivo conectado.
+
 ## Agentes Criados
 
 - `clean-architecture-guardian`: protege fronteiras e direção de dependências.

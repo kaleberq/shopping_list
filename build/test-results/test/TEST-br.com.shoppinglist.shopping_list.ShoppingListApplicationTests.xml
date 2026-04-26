@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.shoppinglist.shopping_list.ShoppingListApplicationTests" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-04-26T16:53:34.404Z" hostname="MacBook-Air-de-Kalebe.local" time="0.957">
+  <properties/>
+  <testcase name="deveSincronizarEventoEntreDuasConexoesDaMesmaLista()" classname="br.com.shoppinglist.shopping_list.ShoppingListApplicationTests" time="0.343"/>
+  <testcase name="contextLoads()" classname="br.com.shoppinglist.shopping_list.ShoppingListApplicationTests" time="0.001"/>
+  <system-out><![CDATA[13:53:34.449 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [br.com.shoppinglist.shopping_list.ShoppingListApplicationTests]: ShoppingListApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+13:53:34.481 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration br.com.shoppinglist.shopping_list.ShoppingListApplication for test class br.com.shoppinglist.shopping_list.ShoppingListApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.3)
+
+2026-04-26T13:53:34.602-03:00  INFO 3789 --- [shopping_list] [    Test worker] b.c.s.s.ShoppingListApplicationTests     : Starting ShoppingListApplicationTests using Java 17.0.18 with PID 3789 (started by kalebemisael in /Users/kalebemisael/Desktop/shopping_list)
+2026-04-26T13:53:34.603-03:00  INFO 3789 --- [shopping_list] [    Test worker] b.c.s.s.ShoppingListApplicationTests     : No active profile set, falling back to 1 default profile: "default"
+2026-04-26T13:53:34.841-03:00  INFO 3789 --- [shopping_list] [    Test worker] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-04-26T13:53:34.845-03:00  INFO 3789 --- [shopping_list] [    Test worker] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-26T13:53:34.845-03:00  INFO 3789 --- [shopping_list] [    Test worker] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-04-26T13:53:34.862-03:00  INFO 3789 --- [shopping_list] [    Test worker] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 249 ms
+2026-04-26T13:53:35.012-03:00  INFO 3789 --- [shopping_list] [    Test worker] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 49905 (http) with context path '/'
+2026-04-26T13:53:35.014-03:00  INFO 3789 --- [shopping_list] [    Test worker] b.c.s.s.ShoppingListApplicationTests     : Started ShoppingListApplicationTests in 0.491 seconds (process running for 0.866)
+2026-04-26T13:53:35.307-03:00  INFO 3789 --- [shopping_list] [o-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-26T13:53:35.307-03:00  INFO 3789 --- [shopping_list] [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-26T13:53:35.308-03:00  INFO 3789 --- [shopping_list] [o-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

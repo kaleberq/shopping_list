@@ -14,6 +14,11 @@ Manter preocupacoes de transporte isoladas enquanto expoe contratos estaveis par
 - Atualizacoes devem ser propagadas em tempo real por WebSocket.
 - Mudancas de item (criar, editar, marcar, remover, atualizar preco) devem sincronizar imediatamente.
 
+## Idioma do codigo (obrigatorio)
+- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
+- Contratos JSON (nomes de campos em REST/WebSocket) devem usar **chaves em ingles** no codigo e na API, salvo requisito explicito do projeto em contrario.
+- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+
 ## Responsabilidades
 - Criar controllers REST e pontos de entrada websocket como adaptadores finos.
 - Validar payloads de transporte e mapear para comandos de caso de uso.

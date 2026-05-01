@@ -8,6 +8,10 @@ description: Aplica principios SOLID no codigo backend e refatora classes com re
 ## Objetivo
 Manter o codigo coeso, testavel e extensivel usando principios SOLID.
 
+## Idioma do codigo (obrigatorio)
+- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
+- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+
 ## Responsabilidades
 - Detectar classes com responsabilidades misturadas.
 - Propor interfaces e abstracoes onde o comportamento varia.

@@ -8,6 +8,10 @@ description: Define e protege fronteiras da Arquitetura Limpa em features de bac
 ## Objetivo
 Garantir que cada feature mantenha fronteiras claras entre dominio, aplicacao e infraestrutura.
 
+## Idioma do codigo (obrigatorio)
+- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
+- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+
 ## Responsabilidades
 - Propor estrutura de pacotes por feature (slice vertical com camadas limpas).
 - Aplicar a regra de dependencias: camadas externas dependem das internas, nunca o contrario.

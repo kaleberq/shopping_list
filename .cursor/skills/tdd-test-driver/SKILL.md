@@ -8,6 +8,10 @@ description: Conduz desenvolvimento backend com ciclos estritos de TDD em Spring
 ## Objetivo
 Implementar features por meio do ciclo Vermelho-Verde-Refatorar com feedback rapido e intencao de teste clara.
 
+## Idioma do codigo (obrigatorio)
+- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
+- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+
 ## Responsabilidades
 - Comecar por exemplos de comportamento e criterios de aceitacao.
 - Escrever primeiro testes que falham (unitarios e depois integracao, quando necessario).

@@ -2,6 +2,10 @@
 
 Este projeto possui agentes (Skills) para apoiar o desenvolvimento backend com responsabilidades separadas.
 
+## Idioma do codigo (projeto)
+
+Todo codigo-fonte (Java, testes, scripts) deve ser escrito em **ingles**. Os textos dos agentes e documentacao para humanos podem ficar em portugues.
+
 ## Contexto Atual do Projeto
 
 - Aplicacao de lista de compras consumida por app Flutter.

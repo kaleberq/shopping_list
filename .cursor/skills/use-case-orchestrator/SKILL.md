@@ -8,6 +8,10 @@ description: Implementa casos de uso da aplicacao com portas claras de entrada e
 ## Objetivo
 Modelar cada acao de negocio como um caso de uso focado e com fronteiras explicitas.
 
+## Idioma do codigo (obrigatorio)
+- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
+- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+
 ## Responsabilidades
 - Traduzir pedidos de feature em contratos de caso de uso.
 - Definir modelos de entrada/saida independentes de classes de framework.

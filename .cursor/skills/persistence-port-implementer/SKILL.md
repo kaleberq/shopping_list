@@ -8,6 +8,10 @@ description: Implementa portas de persistencia de saida com adaptadores Spring D
 ## Objetivo
 Implementar adaptadores de persistencia robustos sem vazar preocupacoes de banco para codigo de dominio/aplicacao.
 
+## Idioma do codigo (obrigatorio)
+- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
+- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+
 ## Responsabilidades
 - Implementar interfaces `port/out` com adaptadores Spring Data/JPA.
 - Mapear entre entidades de persistencia e modelos de dominio.

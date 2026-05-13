@@ -1,0 +1,44 @@
+# Gradle — cache e saída de build (recriados com ./gradlew build)
+.gradle/
+build/
+
+# Saída de alguns IDEs / ferramentas (não é o código-fonte)
+out/
+bin/
+
+# Compilados e empacotados locais
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# Logs e dumps da JVM
+*.log
+hs_err_pid*
+replay_pid*
+
+# IntelliJ IDEA — configuração local da máquina
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+.settings/
+.classpath
+.project
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Android / paths locais da SDK (não deve ir para o repositório)
+local.properties
+
+# Variáveis de ambiente com segredos (se usar depois)
+.env
+.env.local
+*.local.properties

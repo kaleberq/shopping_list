@@ -38,38 +38,77 @@ O backend é desenvolvido utilizando as seguintes tecnologias:
 
 ## Arquitetura
 
-O projeto segue uma arquitetura em camadas comum em aplicações Spring:
+A feature de lista de compras está na fatia vertical **`shoppinglist`**, em **Arquitetura Limpa**: o domínio e a aplicação não dependem de WebSocket, Spring Web nem de onde os dados são guardados (hoje em memória, amanhã em banco).
 
-* **Controller** – responsável pelos endpoints da API
-* **Service** – contém a lógica de negócio
-* **Repository** – acesso ao banco de dados
-* **Model** – entidades do domínio da aplicação
-* **WebSocket** – comunicação em tempo real
-* **Config** – configurações da aplicação
+### O que foi feito na reorganização
 
-Estrutura inicial do projeto:
+- O código que estava em `websocket/` e `config/` foi **movido** para dentro de `shoppinglist/`, separando **regras de negócio** (caso de uso), **contratos** (portas), **modelo** (domínio) e **detalhes técnicos** (WebSocket, repositório em memória, Jackson).
+- A lista de itens por `listId` passou a ficar no adaptador **`InMemoryShoppingListRepository`**, atrás da porta **`ShoppingListRepository`**. Assim, trocar memória por JPA/PostgreSQL exige mudar sobretudo a **infraestrutura**, não o caso de uso.
+- O **handler WebSocket** virou apenas **adaptador de entrada**: lê JSON, monta `AddListItemCommand`, chama `AddListItemUseCase`, lê a lista atual e envia `LIST_UPDATED` para as sessões da mesma sala.
 
-```id="lgx1ls"
-src/main/java/br/com/shoppinglist/shopping_list
+### Caminho base no código-fonte
 
-controller
-service
-repository
-model
-websocket
-config
+Pacote raiz da feature:
+
+`src/main/java/br/com/shoppinglist/shopping_list/shoppinglist/`
+
+Árvore de pastas:
+
+```text
+shoppinglist/
+  domain/model/                    ← entidades do negócio (puro Java)
+  application/
+    dto/                           ← dados que entram nos casos de uso (comandos)
+    port/in/                       ← interfaces: o que a aplicação oferece (API interna)
+    port/out/                      ← interfaces: o que a aplicação precisa do mundo externo
+    usecase/                       ← implementação dos fluxos (orquestra domínio + portas)
+  infrastructure/
+    adapter/in/websocket/          ← WebSocket: protocolo, sessões, mensagens JSON
+    adapter/out/persistence/       ← implementação da porta de persistência (hoje em memória)
+    config/                        ← beans de infraestrutura (ex.: ObjectMapper)
 ```
+
+O arranque do Spring Boot continua em `ShoppingListApplication` (`br.com.shoppinglist.shopping_list`), que **escaneia** todos os subpacotes, inclusive `shoppinglist`.
+
+### Responsabilidade de cada camada
+
+| Camada | Responsabilidade |
+|--------|-------------------|
+| **Domain** | Representar conceitos do negócio (ex.: um **item** de lista com id, descrição, preço, validade). **Sem** anotações Spring, **sem** JSON, **sem** WebSocket. É o núcleo estável do projeto. |
+| **Application** | Orquestrar **casos de uso** (“adicionar item à lista”): valida entrada mínima, decide id novo vs atualização, chama a **porta de saída** para persistir e devolve o estado. **Não** conhece HTTP nem WebSocket. |
+| **Infrastructure** | Detalhes concretos: **WebSocket** (quem conecta, qual URL, broadcast), **repositório em memória** (mapa em RAM), **configuração** do Jackson. Pode ser trocada sem mudar a regra central do caso de uso. |
+
+### Responsabilidade de cada pasta (detalhe)
+
+| Pasta | Para que serve |
+|-------|----------------|
+| **`domain/model/`** | Tipos que descrevem o negócio. Hoje: `ShoppingListItem`. Cresce com regras ou novos conceitos (ex.: `ShoppingList` como agregado) sem puxar framework. |
+| **`application/dto/`** | Objetos de **entrada** dos use cases (comandos/queries). Hoje: `AddListItemCommand` (listId, itemId opcional, description, price, expiry). |
+| **`application/port/in/`** | Contrato **entrada da aplicação**: o que outros módulos/adaptadores podem **chamar**. Hoje: `AddListItemUseCase`. |
+| **`application/port/out/`** | Contrato **saída da aplicação**: o que a aplicação **precisa** do mundo externo. Hoje: `ShoppingListRepository` (listar e gravar itens por lista). |
+| **`application/usecase/`** | Implementação dos portos **in**. Hoje: `AddListItemUseCaseImpl` usa `ShoppingListRepository` e `ShoppingListItem`. |
+| **`infrastructure/adapter/in/websocket/`** | Tudo que é **protocolo WebSocket**: registrar rota `/ws/list`, handler de mensagens, DTO de envelope `SocketEventDTO`. Traduz JSON ↔ comando e dispara broadcasts. |
+| **`infrastructure/adapter/out/persistence/`** | Implementações das portas **out**. Hoje: `InMemoryShoppingListRepository` (substituível por JPA depois). |
+| **`infrastructure/config/`** | Beans que apoiam a infra (ex.: `JacksonConfig` com `ObjectMapper`). |
+
+### Fluxo resumido (adicionar item)
+
+1. Cliente envia WebSocket `ITEM_ADDED` → **adapter in** (`ShoppingListWebSocketHandler`).
+2. Handler monta `AddListItemCommand` → chama **`AddListItemUseCase`**.
+3. Use case cria/atualiza **`ShoppingListItem`** e chama **`ShoppingListRepository.saveItem`**.
+4. **`InMemoryShoppingListRepository`** guarda e devolve a lista atualizada.
+5. Handler monta `LIST_UPDATED` com `items` e envia a todas as sessões da mesma `listId`.
 
 ## Estado Atual do Projeto
 
-O projeto está em fase inicial de desenvolvimento.
+* Spring Boot com WebSocket em `/ws/list` e lista em **memória** (repositório `InMemoryShoppingListRepository`).
+* Fatia **`shoppinglist`** com domínio, caso de uso **adicionar item** e adaptadores (WebSocket + persistência em RAM).
 
-Primeiros passos planejados:
+Próximos passos sugeridos:
 
-* Configuração do projeto Spring Boot
-* Criação dos primeiros endpoints REST
-* Estrutura inicial de WebSocket
-* Definição das entidades principais do domínio
+* Endpoints REST (se quiser além do WebSocket)
+* Persistência PostgreSQL/JPA implementando a mesma `ShoppingListRepository`
+* Autenticação e autorização (quando for o momento)
 
 ## Funcionalidades Futuras
 

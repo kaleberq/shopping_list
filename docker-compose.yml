@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: shopping_list_postgres
+    environment:
+      POSTGRES_DB: shopping_list
+      POSTGRES_USER: shopping_list
+      POSTGRES_PASSWORD: shopping_list
+    ports:
+      - "5432:5432"
+    volumes:
+      - shopping_list_pgdata:/var/lib/postgresql/data
+
+volumes:
+  shopping_list_pgdata:

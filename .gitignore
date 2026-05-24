@@ -1,8 +1,12 @@
 # Gradle — cache e saída de build (recriados com ./gradlew build)
-.gradle/
-build/
+**/.gradle/
+**/build/
+.gradle
+build
 
 # Saída de alguns IDEs / ferramentas (não é o código-fonte)
+**/out/
+**/bin/
 out/
 bin/
 

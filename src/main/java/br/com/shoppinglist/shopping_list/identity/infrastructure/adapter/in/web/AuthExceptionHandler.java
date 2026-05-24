@@ -1,6 +1,7 @@
 package br.com.shoppinglist.shopping_list.identity.infrastructure.adapter.in.web;
 
 import br.com.shoppinglist.shopping_list.identity.domain.exception.EmailAlreadyInUseException;
+import br.com.shoppinglist.shopping_list.identity.domain.exception.EmailDeliveryException;
 import br.com.shoppinglist.shopping_list.identity.domain.exception.InvalidCredentialsException;
 import br.com.shoppinglist.shopping_list.identity.domain.exception.InvalidVerificationCodeException;
 import br.com.shoppinglist.shopping_list.identity.domain.exception.VerificationCodeExpiredException;
@@ -37,6 +38,11 @@ public class AuthExceptionHandler {
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
 		return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
+	}
+
+	@ExceptionHandler(EmailDeliveryException.class)
+	public ResponseEntity<ErrorResponse> handleEmailDelivery(EmailDeliveryException ex) {
+		return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse(ex.getMessage()));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)

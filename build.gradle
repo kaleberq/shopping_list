@@ -31,6 +31,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-flyway'
 	implementation 'org.flywaydb:flyway-database-postgresql'
 	runtimeOnly 'org.postgresql:postgresql'
@@ -44,4 +45,32 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+def loadDotEnv(File envFile) {
+	if (!envFile.exists()) {
+		return [:]
+	}
+	def env = [:]
+	envFile.eachLine { line ->
+		def trimmed = line.trim()
+		if (!trimmed || trimmed.startsWith('#')) {
+			return
+		}
+		def separator = trimmed.indexOf('=')
+		if (separator > 0) {
+			def value = trimmed.substring(separator + 1).trim()
+			if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+				value = value.substring(1, value.length() - 1)
+			}
+			env[trimmed.substring(0, separator).trim()] = value
+		}
+	}
+	return env
+}
+
+tasks.named('bootRun') {
+	loadDotEnv(rootProject.file('.env')).each { key, value ->
+		environment key, value
+	}
 }

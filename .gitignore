@@ -42,7 +42,8 @@ Thumbs.db
 # Android / paths locais da SDK (não deve ir para o repositório)
 local.properties
 
-# Variáveis de ambiente com segredos (se usar depois)
+# Segredos locais (SMTP, etc.) — use .env na raiz; versione só .env.example
 .env
 .env.local
+.env.*.local
 *.local.properties

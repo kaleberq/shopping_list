@@ -209,6 +209,20 @@ docker compose up -d
 
 Credenciais padrão do compose: banco `shopping_list`, usuário/senha `shopping_list`, porta `5432`.
 
+### E-mail (SMTP real — uma vez)
+
+1. Copie o exemplo na **raiz** do repositório:
+
+```bash
+cp .env.example .env
+```
+
+2. Edite `.env` com o Gmail do projeto e a **senha de app** (não use a senha normal do Google). O arquivo `.env` está no `.gitignore` e não deve ser commitado.
+
+3. No Postman, use **o mesmo e-mail** que colocou em `spring.mail.username` no campo `"email"` do JSON (ou outro e-mail que você consiga abrir).
+
+Guia senha de app Google: https://myaccount.google.com/apppasswords
+
 ### Aplicação
 
 Com o Postgres rodando (`docker compose up -d`):
@@ -247,7 +261,15 @@ O app Flutter guarda `name` e `password` localmente; o servidor só precisa do e
 
 Resposta `202`: `{ "message": "Verification code sent to your email" }`.
 
-Em **dev**, o código de 6 dígitos aparece no **log do servidor** (ainda não há envio real de e-mail).
+O código é enviado para o **e-mail que você colocou no JSON** (caixa de entrada real — Gmail, Outlook, etc.). Confira também a pasta **spam**.
+
+Use **seu e-mail de verdade** no Postman, por exemplo:
+
+```json
+{
+  "email": "seu.nome@gmail.com"
+}
+```
 
 **2. Confirmar e criar conta** — `POST http://localhost:8080/auth/register/confirm`
 

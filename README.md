@@ -101,7 +101,7 @@ O arranque do Spring Boot continua em `ShoppingListApplication` (`br.com.shoppin
 4. **`InMemoryShoppingListRepository`** guarda e devolve a lista atualizada.
 5. Handler monta `LIST_UPDATED` com `items` e envia a todas as sessões da mesma `listId`.
 
-### Fatia `identity` (planejada)
+### Fatia `identity` (implementada)
 
 Autenticação e usuários em fatia separada de `shoppinglist`, no mesmo estilo de Arquitetura Limpa:
 
@@ -111,7 +111,7 @@ identity/
   application/usecase/          ← RegisterWithEmail, LoginWithEmail (OAuth depois)
   application/port/out/         ← UserRepository, PasswordHasher, TokenIssuer
   infrastructure/
-    adapter/in/web/           ← POST /auth/register, POST /auth/login
+    adapter/in/web/           ← cadastro em 2 passos + POST /auth/login
     adapter/out/persistence/
     config/                     ← Security (JWT Resource Server)
 ```
@@ -152,7 +152,7 @@ APIs protegidas e WebSocket usam **JWT emitido pelo backend** (`sub` = `users.id
 * `spring-boot-starter-data-jpa`
 * `postgresql` (driver runtime)
 * `spring-boot-starter-flyway` + `flyway-database-postgresql`
-* `spring-boot-starter-security` + JWT — **próximo passo** (fatia `identity`)
+* `spring-boot-starter-security` + `spring-boot-starter-oauth2-resource-server` (JWT)
 
 Configuração do perfil **`dev`** (`application-dev.properties`):
 
@@ -170,14 +170,15 @@ Variáveis sensíveis em produção (URL do banco, `JWT_SECRET`) via ambiente, n
 
 * Spring Boot com WebSocket em `/ws/list` e lista em **memória** (repositório `InMemoryShoppingListRepository`).
 * Fatia **`shoppinglist`** com domínio, caso de uso **adicionar item** e adaptadores (WebSocket + persistência em RAM).
+* Fatia **`identity`**: registro, login, JWT; usuários no PostgreSQL. WebSocket ainda **sem** exigir token.
 
 Roadmap técnico (ordem sugerida):
 
 1. ~~Dependências JPA, PostgreSQL, Flyway no `build.gradle`~~
 2. ~~`docker-compose` + perfil `dev` + migração Flyway (`users`)~~
-3. Fatia **`identity`**: registro, login, JWT (+ Security no Gradle)
+3. ~~Fatia **`identity`**: registro, login, JWT (+ Security no Gradle)~~
 4. Persistir listas no PostgreSQL (`ShoppingListRepository` via JPA)
-5. Proteger REST/WebSocket com JWT e membership em listas
+5. Proteger WebSocket com JWT e membership em listas
 
 ## Funcionalidades Futuras
 
@@ -227,6 +228,66 @@ http://localhost:8080
 ## Objetivo
 
 Este backend faz parte de um projeto pessoal com o objetivo de desenvolver uma aplicação de **lista de compras colaborativa em tempo real**, utilizando Flutter no aplicativo mobile e Spring Boot no servidor.
+
+## Autenticação (REST)
+
+Com Postgres rodando e `./gradlew bootRun`:
+
+### Registrar (2 passos)
+
+**1. Pedir código** — `POST http://localhost:8080/auth/register/request-code`
+
+O app Flutter guarda `name` e `password` localmente; o servidor só precisa do e-mail para enviar o código.
+
+```json
+{
+  "email": "ana@example.com"
+}
+```
+
+Resposta `202`: `{ "message": "Verification code sent to your email" }`.
+
+Em **dev**, o código de 6 dígitos aparece no **log do servidor** (ainda não há envio real de e-mail).
+
+**2. Confirmar e criar conta** — `POST http://localhost:8080/auth/register/confirm`
+
+Com o código correto, o app envia **todos** os dados; só então a conta é criada em `users`.
+
+```json
+{
+  "email": "ana@example.com",
+  "code": "482910",
+  "name": "Ana",
+  "password": "senha1234"
+}
+```
+
+Resposta `201`:
+
+```json
+{
+  "accessToken": "...",
+  "tokenType": "Bearer",
+  "expiresIn": 3600
+}
+```
+
+O código expira em 15 minutos (`app.verification.code-expiration-minutes`). Pedir um novo código substitui o anterior para o mesmo e-mail.
+
+### Login
+
+`POST http://localhost:8080/auth/login`
+
+```json
+{
+  "email": "ana@example.com",
+  "password": "senha1234"
+}
+```
+
+Resposta `200`: mesmo formato do registro.
+
+Rotas futuras protegidas: header `Authorization: Bearer <accessToken>`. `/auth/**` e `/ws/**` permanecem públicas por enquanto.
 
 ## WebSocket (lista em memória)
 

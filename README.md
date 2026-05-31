@@ -40,7 +40,18 @@ O backend é desenvolvido utilizando as seguintes tecnologias:
 
 ## Arquitetura
 
-A feature de lista de compras está na fatia vertical **`shoppinglist`**, em **Arquitetura Limpa**: o domínio e a aplicação não dependem de WebSocket, Spring Web nem de onde os dados são guardados (hoje em memória, amanhã em banco).
+O backend usa **Arquitetura Limpa** (Clean Architecture / Ports & Adapters) em **fatias verticais** (`shoppinglist`, `identity`). **Não é MVVM** — MVVM é padrão de UI (ex.: Flutter); aqui a separação é **domain → application → infrastructure**.
+
+Convenção de nomes:
+
+| Tipo | Onde | Exemplo |
+|------|------|---------|
+| Interface (porta de entrada) | `application/port/in/` | `AddListItemUseCase` |
+| Implementação do caso de uso | `application/usecase/` | `AddListItemUseCaseImpl` |
+| Interface (porta de saída) | `application/port/out/` | `UserRepository` |
+| Adaptador concreto | `infrastructure/adapter/` | `JpaUserRepository`, `SmtpVerificationCodeSender` |
+
+A feature de lista de compras está na fatia vertical **`shoppinglist`**: o domínio e a aplicação não dependem de WebSocket, Spring Web nem de onde os dados são guardados (hoje em memória, amanhã em banco).
 
 ### O que foi feito na reorganização
 
@@ -108,15 +119,22 @@ Autenticação e usuários em fatia separada de `shoppinglist`, no mesmo estilo 
 ```text
 identity/
   domain/model/User
-  application/usecase/          ← RegisterWithEmail, LoginWithEmail (OAuth depois)
-  application/port/out/         ← UserRepository, PasswordHasher, TokenIssuer
+  domain/exception/
+  application/
+    port/in/                    ← RequestRegistrationCodeUseCase, ConfirmRegistrationUseCase, LoginUserUseCase
+    port/out/                   ← UserRepository, EmailVerificationCodeRepository, PasswordHasher, TokenIssuer, VerificationCodeSender
+    usecase/                    ← *UseCaseImpl, RegistrationInputValidator
+    dto/
   infrastructure/
-    adapter/in/web/           ← cadastro em 2 passos + POST /auth/login
-    adapter/out/persistence/
-    config/                     ← Security (JWT Resource Server)
+    adapter/in/web/             ← AuthController, AuthExceptionHandler
+    adapter/out/persistence/    ← JPA (users, email_verification_code)
+    adapter/out/email/          ← SmtpVerificationCodeSender
+    config/                     ← Security (JWT), Mail, JwtProperties
 ```
 
-Login por **e-mail e senha** no início; hash da senha na tabela `users` (coluna `password_hash`). O domínio `User` não expõe senha — só a infraestrutura persiste e compara o hash (BCrypt).
+**Cadastro em 2 passos:** o app guarda `name` e `password` localmente; o servidor só persiste um **código de verificação** em `email_verification_code` até o `confirm`. Só então cria a linha em `users` com `password_hash` (BCrypt). O domínio `User` não expõe senha.
+
+Login por **e-mail e senha**; JWT com `tokenType: "Bearer"` e `sub` = `users.id`.
 
 ## Persistência (PostgreSQL)
 
@@ -143,7 +161,30 @@ Tabela **`users`**:
 
 No código Java, timestamps como **`Instant`** (UTC) no domínio; JPA/auditing na infraestrutura. O modelo de domínio `User` contém `id`, `email`, `name`, `createdAt`, `updatedAt` — **sem** `password_hash` (fica na entidade JPA / adaptador de persistência).
 
+Tabela **`email_verification_code`** (código pendente de cadastro):
+
+| Coluna | Tipo | Observação |
+|--------|------|------------|
+| `email` | `VARCHAR` PK | E-mail aguardando confirmação |
+| `code_hash` | `VARCHAR` | Hash do código (não armazena o código em texto claro) |
+| `expires_at` | `TIMESTAMPTZ` | Expiração (padrão 15 min) |
+| `created_at` | `TIMESTAMPTZ` | Quando o código foi solicitado |
+
 APIs protegidas e WebSocket usam **JWT emitido pelo backend** (`sub` = `users.id`).
+
+### Flyway (migrações)
+
+Scripts em `src/main/resources/db/migration/`:
+
+| Versão | Arquivo | O que faz |
+|--------|---------|-----------|
+| V1 | `V1__create_users_table.sql` | Cria `users` |
+| V2 | `V2__create_registration_verifications_table.sql` | Tabela de verificação (evoluída nas V3–V5) |
+| V3 | `V3__simplify_registration_verifications.sql` | Remove `name`/`password_hash` da verificação |
+| V4 | `V4__rename_to_email_verification_codes.sql` | Renomeia tabela |
+| V5 | `V5__rename_email_verification_code_singular.sql` | Nome final: `email_verification_code` |
+
+Tabela **`flyway_schema_history`**: criada e mantida pelo Flyway. Registra quais migrações já rodaram no banco (versão, script, data, sucesso). **Não edite manualmente** — o Flyway usa isso para não reaplicar scripts. Em dev, para resetar tudo: `docker compose down -v` e `docker compose up -d` (apaga o volume e reaplica V1–V5).
 
 > **Futuro (OAuth):** quando houver login social, pode-se introduzir `user_identities` e mover ou complementar credenciais sem mudar o contrato do JWT. Não faz parte do escopo inicial.
 
@@ -153,6 +194,7 @@ APIs protegidas e WebSocket usam **JWT emitido pelo backend** (`sub` = `users.id
 * `postgresql` (driver runtime)
 * `spring-boot-starter-flyway` + `flyway-database-postgresql`
 * `spring-boot-starter-security` + `spring-boot-starter-oauth2-resource-server` (JWT)
+* `spring-boot-starter-mail` (SMTP — códigos de verificação)
 
 Configuração do perfil **`dev`** (`application-dev.properties`):
 
@@ -164,21 +206,23 @@ spring.jpa.hibernate.ddl-auto=validate
 spring.flyway.enabled=true
 ```
 
-Variáveis sensíveis em produção (URL do banco, `JWT_SECRET`) via ambiente, não versionadas no repositório.
+Credenciais de **SMTP** ficam no arquivo **`.env`** na raiz (ver seção abaixo). Variáveis sensíveis em produção (URL do banco, `JWT_SECRET`, senha de app) via ambiente, não versionadas no repositório.
 
 ## Estado Atual do Projeto
 
-* Spring Boot com WebSocket em `/ws/list` e lista em **memória** (repositório `InMemoryShoppingListRepository`).
-* Fatia **`shoppinglist`** com domínio, caso de uso **adicionar item** e adaptadores (WebSocket + persistência em RAM).
-* Fatia **`identity`**: registro, login, JWT; usuários no PostgreSQL. WebSocket ainda **sem** exigir token.
+* Spring Boot com WebSocket em `/ws/list` e lista em **memória** (`InMemoryShoppingListRepository`).
+* Fatia **`shoppinglist`**: domínio, caso de uso **adicionar item**, adaptadores WebSocket + RAM.
+* Fatia **`identity`**: cadastro em 2 passos (código por e-mail), login, JWT; `users` e `email_verification_code` no PostgreSQL; SMTP via Gmail + `.env`.
+* WebSocket ainda **sem** exigir token.
 
 Roadmap técnico (ordem sugerida):
 
 1. ~~Dependências JPA, PostgreSQL, Flyway no `build.gradle`~~
 2. ~~`docker-compose` + perfil `dev` + migração Flyway (`users`)~~
 3. ~~Fatia **`identity`**: registro, login, JWT (+ Security no Gradle)~~
-4. Persistir listas no PostgreSQL (`ShoppingListRepository` via JPA)
-5. Proteger WebSocket com JWT e membership em listas
+4. ~~Verificação de e-mail no cadastro + envio SMTP real (`.env`)~~
+5. Persistir listas no PostgreSQL (`ShoppingListRepository` via JPA)
+6. Proteger WebSocket com JWT e membership em listas
 
 ## Funcionalidades Futuras
 
@@ -217,11 +261,27 @@ Credenciais padrão do compose: banco `shopping_list`, usuário/senha `shopping_
 cp .env.example .env
 ```
 
-2. Edite `.env` com o Gmail do projeto e a **senha de app** (não use a senha normal do Google). O arquivo `.env` está no `.gitignore` e não deve ser commitado.
+2. Edite `.env` com o Gmail do projeto e a **senha de app** (16 caracteres — não use a senha normal do Google). O arquivo `.env` está no `.gitignore` e não deve ser commitado.
 
-3. No Postman, use **o mesmo e-mail** que colocou em `spring.mail.username` no campo `"email"` do JSON (ou outro e-mail que você consiga abrir).
+Exemplo (`.env`):
 
-Guia senha de app Google: https://myaccount.google.com/apppasswords
+```properties
+spring.mail.username=seu@gmail.com
+spring.mail.password=abcd efgh ijkl mnop
+app.mail.from=seu@gmail.com
+```
+
+| Variável | Função |
+|----------|--------|
+| `spring.mail.username` | Login SMTP (e-mail **completo** `@gmail.com`) |
+| `spring.mail.password` | Senha de app do Google (sem aspas no arquivo) |
+| `app.mail.from` | Remetente exibido no e-mail (use o **mesmo** e-mail do `username`) |
+
+Requer **verificação em 2 etapas** na conta Google. Guia senha de app: https://myaccount.google.com/apppasswords
+
+3. Reinicie `./gradlew bootRun` após alterar o `.env`.
+
+4. No Postman, o `"email"` do JSON é **para quem vai o código** (pode ser o mesmo Gmail ou outro e-mail que você abra).
 
 ### Aplicação
 
@@ -237,6 +297,31 @@ A aplicação sobe em:
 
 ```text
 http://localhost:8080
+```
+
+### Inspecionar o banco (Database Client)
+
+Extensão recomendada no Cursor: **Database Client** (`cweijan.vscode-database-client2`).
+
+1. Barra lateral → ícone de banco → **New Connection** → PostgreSQL
+2. Host `localhost`, porta `5432`, database/usuário/senha `shopping_list`
+3. Expanda **Tables** → `users`, `email_verification_code`, `flyway_schema_history`
+
+### Solução de problemas
+
+| Sintoma | Causa provável | O que fazer |
+|---------|----------------|-------------|
+| `Connection to localhost:5432 refused` | Postgres parado | `docker compose up -d` (Docker Desktop aberto) |
+| `Port 8080 was already in use` | Outro `bootRun` rodando | `lsof -i :8080 -t \| xargs kill` e subir de novo |
+| `503` + mensagem sobre senha de app | SMTP incorreto no `.env` | Senha de **app**, e-mail completo em `username`, reiniciar app |
+| Log Docker `not properly shut down; automatic recovery` | Container parou abrupto | Normal em dev; aguarde `ready to accept connections` |
+| `401` no `request-code` | Erro antigo de SMTP mascarado | Atualize o código; falha de e-mail retorna **503** com JSON explicativo |
+
+Reset completo do banco local (apaga dados):
+
+```bash
+docker compose down -v
+docker compose up -d
 ```
 
 ## Objetivo
@@ -295,6 +380,18 @@ Resposta `201`:
 ```
 
 O código expira em 15 minutos (`app.verification.code-expiration-minutes`). Pedir um novo código substitui o anterior para o mesmo e-mail.
+
+Códigos HTTP comuns:
+
+| Situação | HTTP |
+|----------|------|
+| Código enviado | `202` |
+| Conta criada / login ok | `201` / `200` |
+| Código inválido | `400` |
+| Código expirado | `410` (Gone) |
+| E-mail já cadastrado | `409` |
+| Falha ao enviar e-mail (SMTP) | `503` |
+| Login com credenciais erradas | `401` |
 
 ### Login
 

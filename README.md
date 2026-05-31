@@ -40,7 +40,7 @@ O backend é desenvolvido utilizando as seguintes tecnologias:
 
 ## Arquitetura
 
-O backend usa **Arquitetura Limpa** (Clean Architecture / Ports & Adapters) em **fatias verticais** (`shoppinglist`, `identity`). **Não é MVVM** — MVVM é padrão de UI (ex.: Flutter); aqui a separação é **domain → application → infrastructure**.
+O backend usa **Arquitetura Limpa** (Clean Architecture / Ports & Adapters), organizado em **fatias verticais** (`shoppinglist`, `identity`). Cada fatia segue a separação **domain → application → infrastructure**.
 
 Convenção de nomes:
 

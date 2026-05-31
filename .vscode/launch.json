@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "type": "java",
+      "name": "Shopping List (Spring Boot) - Docker",
+      "request": "launch",
+      "mainClass": "br.com.shoppinglist.shopping_list.ShoppingListApplication",
+      "projectName": "shopping_list",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
+      "preLaunchTask": "docker: postgres up"
+    },
+  ]
+}

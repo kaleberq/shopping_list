@@ -299,6 +299,20 @@ A aplicação sobe em:
 http://localhost:8080
 ```
 
+### Run and Debug (Cursor / VS Code)
+
+1. Instale as extensões sugeridas ao abrir o projeto (**Extension Pack for Java** e **Spring Boot Extension Pack**).
+2. Abra **Run and Debug** (`Cmd+Shift+D`).
+3. Escolha **Shopping List (Spring Boot)** e pressione **F5** (ou ▶).
+
+A configuração em `.vscode/launch.json`:
+
+* sobe o Postgres com `docker compose up -d` antes de iniciar;
+* carrega variáveis do `.env` (SMTP);
+* permite **breakpoints** no código Java.
+
+Use **Shopping List (sem Docker automático)** se o Postgres já estiver rodando e você não quiser o passo extra do Docker.
+
 ### Inspecionar o banco (Database Client)
 
 Extensão recomendada no Cursor: **Database Client** (`cweijan.vscode-database-client2`).

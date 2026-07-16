@@ -1,49 +1,30 @@
 ---
 name: persistence-port-implementer
-description: Implementa portas de persistencia de saida com adaptadores Spring Data preservando a pureza do dominio. Use ao criar repositorios, mapeadores e integracao com banco em projetos backend com Arquitetura Limpa.
+description: Implementa entidades e repositorios TypeORM/PostgreSQL no NestJS. Use ao criar tabelas, entidades, migracoes SQL e acesso a dados sem vazar detalhes no controller.
 ---
 
-# Implementador de Porta de Persistencia
+# Persistencia TypeORM (NestJS)
 
 ## Objetivo
-Implementar adaptadores de persistencia robustos sem vazar preocupacoes de banco para codigo de dominio/aplicacao.
+Persistir dados no PostgreSQL via TypeORM, com schema versionado em `database/init.sql` para ambientes Docker novos.
 
-## Idioma do codigo (obrigatorio)
-- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
-- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+## Idioma
+Codigo em **ingles**; nomes de colunas snake_case no banco.
 
-## Responsabilidades
-- Implementar interfaces `port/out` com adaptadores Spring Data/JPA.
-- Mapear entre entidades de persistencia e modelos de dominio.
-- Tratar fronteiras de transacao na borda entre adaptador e aplicacao.
-- Adicionar testes de integracao para comportamento de repositorio.
+## Tabelas atuais
+- `users`
+- `email_verification_code`
+- `shopping_list_items` (`item_id`, `list_id`, `description`, `price`, `expiry`, timestamps)
 
-## Contexto Especifico deste Projeto
-- Persistir listas de compras compartilhadas e seus itens.
-- Garantir suporte a campos de item: descricao, preco e validade opcional.
-- Preparar consultas para sincronizacao eficiente de alteracoes por lista.
-- Registrar metadados de atualizacao para apoiar notificacoes em tempo real.
+## Padrao
+1. Criar entity em `entities/`.
+2. Registrar em `TypeOrmModule.forFeature` e em `entities` do `forRoot`.
+3. Injetar `Repository<T>` no service.
+4. Atualizar `database/init.sql` para Postgres novo (`IF NOT EXISTS`).
+5. Em dev, `TYPEORM_SYNC=true` pode alinhar schema; em prod preferir SQL/migracoes.
 
 ## Regras
-1. O modelo de dominio deve ser agnostico a persistencia.
-2. Anotacoes JPA permanecem em entidades de infraestrutura.
-3. Mapeadores devem ser explicitos e cobertos por teste.
-4. Metodos de porta de saida expressam intencao de dominio, nao detalhes SQL.
-
-## Padrao de Adaptador
-- `ShoppingListRepositoryPort` (porta da aplicacao)
-- `JpaShoppingListRepository` (interface Spring Data)
-- `ShoppingListPersistenceAdapter` (implementa porta e usa mapper)
-
-## Adaptacao Continua
-- Se regras, padroes ou convencoes do projeto mudarem durante o desenvolvimento, adapte este agente imediatamente.
-- Reflita a regra de negocio mais atual no desenho das portas e consultas de persistencia.
-- Em mudancas de modelo, ajuste mapeamentos e preserve compatibilidade de migracao de dados.
-
-## Formato de Saida
-Ao implementar persistencia, entregue:
-1. Metodos da porta e intencao
-2. Design da entidade de persistencia
-3. Regras de mapeamento
-4. Estrategia de transacao
-5. Testes de integracao necessarios
+- Hash de senha/codigo fica na entidade/coluna (`password_hash`, `code_hash`), nunca em DTO de resposta.
+- Nao retornar `passwordHash` em JSON de API.
+- Indices para `email` e `list_id`.
+- Credenciais so via env (`DATABASE_*`), nunca hardcoded.

@@ -1,67 +1,52 @@
 ---
 name: clean-architecture-guardian
-description: Define e protege fronteiras da Arquitetura Limpa em features de backend Spring Boot. Use ao criar modulos, organizar pacotes, revisar direcao de dependencias e evitar vazamento de framework no dominio.
+description: Organiza modulos NestJS (auth, shopping-list) com fronteiras claras entre controller, service, entities e transport. Use ao criar features, pastas e revisar acoplamento.
 ---
 
-# Guardiao da Arquitetura Limpa
+# Guardiao de Modulos NestJS
 
 ## Objetivo
-Garantir que cada feature mantenha fronteiras claras entre dominio, aplicacao e infraestrutura.
+Manter o backend NestJS organizado por **feature modules**, sem misturar transport (HTTP/WS), regras e persistência na mesma classe.
 
 ## Idioma do codigo (obrigatorio)
-- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
-- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+- Codigo-fonte em **ingles** (arquivos, classes, metodos, campos, comentarios).
+- Textos deste agente e docs para humanos podem ficar em portugues.
 
-## Responsabilidades
-- Propor estrutura de pacotes por feature (slice vertical com camadas limpas).
-- Aplicar a regra de dependencias: camadas externas dependem das internas, nunca o contrario.
-- Manter regras de negocio no dominio/aplicacao e detalhes de Spring na infraestrutura.
-- Definir portas e adaptadores para preocupacoes externas (banco, mensageria, websocket, http).
+## Stack deste projeto
+- NestJS + TypeScript
+- TypeORM + PostgreSQL
+- WebSocket nativo (`ws`) em `/ws/list`
+- Auth JWT em `src/auth`
 
-## Contexto Especifico deste Projeto
-- Backend de lista de compras para cliente Flutter.
-- Listas compartilhadas com sincronizacao em tempo real entre dispositivos.
-- Uso de WebSocket como adaptador de entrada para propagacao de alteracoes.
-- Casos de uso devem gerar eventos para atualizacao dos clientes conectados.
-
-## Estrutura Padrao
-Use esta organizacao por feature:
+## Estrutura alvo
 
 ```text
-feature/
-  domain/
-    model/
-    valueobject/
-    service/
-    event/
-    exception/
-  application/
-    usecase/
-    port/in/
-    port/out/
+src/
+  auth/
+    auth.module.ts
+    auth.controller.ts
+    auth.service.ts
     dto/
-  infrastructure/
-    adapter/in/web/
-    adapter/in/websocket/
-    adapter/out/persistence/
-    config/
+    entities/
+    exceptions/
+  shopping-list/
+    shopping-list.module.ts
+    shopping-list.service.ts
+    shopping-list.ws.ts
+    entities/
+  app.module.ts
+  main.ts
 ```
 
 ## Regras
-1. O dominio nao pode importar Spring nem anotacoes de persistencia.
-2. Casos de uso orquestram o fluxo de negocio e dependem de interfaces `port/out`.
-3. Controllers apenas traduzem entrada/saida HTTP e chamam casos de uso `port/in`.
-4. Repositorios/adaptadores implementam interfaces `port/out`.
-5. Mapeamento para modelos de persistencia ocorre nos adaptadores de infraestrutura.
+- Controller/gateway finos: validam entrada e delegam ao service.
+- Service orquestra regras e repositorios TypeORM.
+- Nao colocar SQL bruto ou Nodemailer no controller.
+- JSON de API/WS com chaves em **ingles** (`itemId`, `accessToken`, `LIST_UPDATED`).
+- Porta HTTP padrao: `8080` (compativel com o app Flutter).
 
-## Adaptacao Continua
-- Se regras, padroes ou convencoes do projeto mudarem durante o desenvolvimento, adapte este agente imediatamente.
-- Considere sempre a regra mais recente definida pelo projeto como fonte de verdade.
-- Em caso de conflito entre regra antiga e nova, aplique a nova e sinalize a mudanca nas recomendacoes.
-
-## Formato de Saida
-Ao desenhar ou revisar arquitetura, entregue:
-1. Arvore de pacotes proposta
-2. Dependencias permitidas por camada
-3. Violacoes de fronteira encontradas
-4. Plano de refatoracao em passos pequenos e seguros
+## Checklist
+- [ ] Feature tem um `*.module.ts` dedicado
+- [ ] DTOs com `class-validator` na borda HTTP
+- [ ] Entidades TypeORM isoladas em `entities/`
+- [ ] Sem secrets no codigo (usar `.env` / `ConfigService`)

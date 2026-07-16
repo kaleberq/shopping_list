@@ -1,53 +1,36 @@
 ---
 name: rest-websocket-adapter
-description: Cria adaptadores HTTP e WebSocket que mapeiam contratos externos para casos de uso da aplicacao em Spring Boot. Use ao criar controllers, handlers websocket, validacao de requisicoes e mapeamento de respostas.
+description: Cria controllers HTTP e servidores WebSocket NestJS alinhados aos contratos do Flutter. Use ao expor rotas REST, eventos WS e mapeamento de erros HTTP.
 ---
 
-# Adaptador REST e WebSocket
+# Adaptador HTTP e WebSocket (NestJS)
 
 ## Objetivo
-Manter preocupacoes de transporte isoladas enquanto expoe contratos estaveis para os clientes.
+Manter adaptadores de entrada finos e contratos estaveis com o cliente Flutter.
 
-## Contexto Especifico deste Projeto
-- Cliente principal: aplicativo Flutter.
-- Listas de compras sao compartilhadas entre dois ou mais dispositivos.
-- Atualizacoes devem ser propagadas em tempo real por WebSocket.
-- Mudancas de item (criar, editar, marcar, remover, atualizar preco) devem sincronizar imediatamente.
+## Idioma
+Codigo e chaves JSON em **ingles**.
 
-## Idioma do codigo (obrigatorio)
-- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
-- Contratos JSON (nomes de campos em REST/WebSocket) devem usar **chaves em ingles** no codigo e na API, salvo requisito explicito do projeto em contrario.
-- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+## REST (auth)
 
-## Responsabilidades
-- Criar controllers REST e pontos de entrada websocket como adaptadores finos.
-- Validar payloads de transporte e mapear para comandos de caso de uso.
-- Mapear resultados/excecoes de caso de uso para respostas da API e eventos.
-- Manter preocupacoes de protocolo fora das camadas de aplicacao/dominio.
+| Metodo | Path | Status |
+|--------|------|--------|
+| POST | `/auth/register/request-code` | 202 |
+| POST | `/auth/register/confirm` | 201 |
+| POST | `/auth/login` | 200 |
+
+Erros: 400 / 401 / 409 / 410 / 503 com body `{ "message": "..." }`.
+
+## WebSocket
+
+- URL: `ws://host/ws/list?listId=...` (WebSocket **nativo**, nao Socket.IO)
+- Implementacao: `ShoppingListWsServer` com `ws` anexado ao HTTP server
+- Ao conectar: `LIST_UPDATED`
+- Entrada: `ITEM_ADDED` → service → broadcast `LIST_UPDATED`
+- Outros `type`: fan-out na mesma `listId`
 
 ## Regras
-1. Controllers e handlers websocket nao devem conter regra de negocio.
-2. DTOs de requisicao ficam na camada de adaptador.
-3. Converter excecoes em payloads de erro consistentes.
-4. Manter contratos versionados quando houver quebra de compatibilidade.
-5. Publicar eventos de atualizacao por lista/canal para que clientes conectados recebam mudancas em tempo real.
-6. Garantir identificacao da lista compartilhada no contrato de eventos.
-
-## Checklist do Adaptador
-- Anotacoes de validacao de entrada e casos de borda cobertos.
-- Classe ou metodo de mapeamento de DTO para comando.
-- Status codes e esquema de erro claros.
-- Testes de contrato para cenarios principais e de falha.
-- Estrategia de reconexao e reenvio de estado inicial para clientes Flutter definida.
-
-## Adaptacao Continua
-- Se regras, padroes ou convencoes do projeto mudarem durante o desenvolvimento, adapte este agente imediatamente.
-- Ajuste contratos HTTP/WebSocket para refletir a regra mais recente aprovada.
-- Quando houver alteracao de contrato, sinalize impacto de compatibilidade e estrategia de migracao.
-
-## Formato de Saida
-Ao implementar endpoints de adaptador, entregue:
-1. Contrato (rota/topico, payload, resposta)
-2. Plano de mapeamento para caso de uso
-3. Estrategia de tratamento de erro
-4. Testes de contrato a adicionar
+- Controllers so mapeiam DTO ↔ service.
+- Usar `ValidationPipe` global + filters por dominio (ex.: `AuthExceptionFilter`).
+- Nao exigir JWT em `/auth/**` nem `/ws/**` ate membership existir.
+- Preservar nomes de eventos e campos ja usados pelo Flutter.

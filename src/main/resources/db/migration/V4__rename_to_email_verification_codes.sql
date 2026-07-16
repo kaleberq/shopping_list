@@ -1,1 +1,0 @@
-ALTER TABLE registration_verifications RENAME TO email_verification_codes;

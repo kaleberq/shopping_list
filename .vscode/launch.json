@@ -1,16 +1,28 @@
 {
   "version": "0.2.0",
   "configurations": [
-
     {
-      "type": "java",
-      "name": "Shopping List (Spring Boot) - Docker",
+      "type": "node",
       "request": "launch",
-      "mainClass": "br.com.shoppinglist.shopping_list.ShoppingListApplication",
-      "projectName": "shopping_list",
+      "name": "Shopping List (NestJS)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:debug"],
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
-      "preLaunchTask": "docker: postgres up"
+      "console": "integratedTerminal",
+      "preLaunchTask": "docker: postgres up",
+      "skipFiles": ["<node_internals>/**"]
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Shopping List (sem Docker automático)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:debug"],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    }
   ]
 }

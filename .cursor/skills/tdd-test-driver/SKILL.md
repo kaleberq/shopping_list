@@ -1,55 +1,34 @@
 ---
 name: tdd-test-driver
-description: Conduz desenvolvimento backend com ciclos estritos de TDD em Spring Boot e Java. Use ao implementar novas features, corrigir bugs ou refatorar comportamento com seguranca.
+description: Conduz TDD com Jest no NestJS (unitario em services, e2e com supertest). Use ao implementar features ou corrigir bugs com ciclos Red-Green-Refactor.
 ---
 
-# Condutor de TDD
+# Motor de TDD (NestJS + Jest)
 
 ## Objetivo
-Implementar features por meio do ciclo Vermelho-Verde-Refatorar com feedback rapido e intencao de teste clara.
+Desenvolver com ciclos curtos Red → Green → Refactor usando Jest e `@nestjs/testing`.
 
-## Idioma do codigo (obrigatorio)
-- Todo codigo-fonte deve ser escrito em **ingles**: nomes de pacotes, classes, metodos, campos, variaveis locais, constantes e comentarios no codigo.
-- Mensagens voltadas ao usuario final, documentacao de produto e texto destes agentes podem permanecer em portugues quando fizer sentido.
+## Idioma
+Testes e codigo em **ingles**.
 
-## Responsabilidades
-- Comecar por exemplos de comportamento e criterios de aceitacao.
-- Escrever primeiro testes que falham (unitarios e depois integracao, quando necessario).
-- Implementar somente o minimo de codigo de producao para passar nos testes.
-- Refatorar com seguranca mantendo a suite verde.
+## Ciclo
+1. **Red**: escrever teste que falha (service unitario preferencialmente).
+2. **Green**: menor mudanca para passar.
+3. **Refactor**: limpar sem quebrar testes.
 
-## Contexto Especifico deste Projeto
-- Priorizar cenarios de lista compartilhada em tempo real.
-- Cobrir testes para sincronizacao de atualizacao entre dispositivos.
-- Validar fluxo de item com descricao, preco e data de validade opcional.
-- Incluir testes para alteracao de preco antes e durante a compra.
+## Onde testar
+- **Unit**: `AuthService`, `ShoppingListService` (mock de `Repository` / `JwtService` / `MailService`).
+- **E2E**: `test/*.e2e-spec.ts` com supertest nas rotas `/auth/*`.
+- WebSocket: teste de integracao opcional com cliente `ws`.
 
-## Ciclo TDD
-1. **Vermelho**: Adicionar um teste que falha com nome descritivo.
-2. **Verde**: Implementar o minimo para passar.
-3. **Refatorar**: Melhorar nomes, estrutura e duplicacao.
-4. Repetir em ciclos pequenos.
+## Comandos
+```bash
+npm test
+npm run test:e2e
+npm run test:watch
+```
 
-## Estrategia de Testes
-- Regras de dominio: testes unitarios puros, sem contexto Spring.
-- Orquestracao de casos de uso: testes unitarios com portas mockadas.
-- Adaptadores de persistencia/web: testes de integracao com slices Spring.
-- Contratos de controller: testes de request/response e cenarios de validacao.
-
-## Regras de Qualidade
-- Cada teste deve focar em um comportamento.
-- Nomes dos testes devem descrever cenario e resultado esperado.
-- Evitar excesso de mocks para comportamento de dominio.
-- Manter testes deterministas e independentes.
-
-## Adaptacao Continua
-- Se regras, padroes ou convencoes do projeto mudarem durante o desenvolvimento, adapte este agente imediatamente.
-- Alinhe estrategia de testes e criterios de aceite com a versao mais recente das regras.
-- Quando houver mudanca de regra de negocio, atualize primeiro os testes e depois a implementacao.
-
-## Formato de Saida
-Ao implementar uma feature, entregue:
-1. Primeiro teste falhando
-2. Implementacao minima
-3. Alteracoes de refatoracao
-4. Proximos casos de borda como novos testes no vermelho
+## Regras
+- Nao commitar testes que dependem de SMTP real.
+- Usar DB de teste ou mocks; nao gravar secrets em fixtures.
+- Nomes: `*.spec.ts` ao lado do codigo ou em `test/` para e2e.

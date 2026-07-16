@@ -1,33 +1,28 @@
-# Agentes de Backend (NestJS)
+# Agent skills (shopping_list)
 
-Skills alinhadas ao stack atual: **NestJS + TypeORM + PostgreSQL + WebSocket nativo**.
+Workflows com regras de segurança, passos, gates e checklist para NestJS + TypeORM + WebSocket nativo.
 
-## Idioma do codigo
-
-Todo codigo-fonte (TypeScript, testes, scripts) em **ingles**. Textos dos agentes podem ficar em portugues.
-
-## Contexto
-
-- Backend para app Flutter (lista de compras colaborativa).
-- Modulos: `auth`, `shopping-list`.
-- Auth REST + JWT; itens persistidos em `shopping_list_items`; sync via `/ws/list`.
+Fonte de verdade: [`AGENTS.md`](../../AGENTS.md) (`CLAUDE.md` aponta para o mesmo arquivo).
 
 ## Skills
 
 | Skill | Uso |
 |-------|-----|
-| `clean-architecture-guardian` | Estrutura de modulos Nest / fronteiras |
-| `use-case-orchestrator` | Regras em services |
-| `tdd-test-driver` | Jest Red-Green-Refactor |
-| `rest-websocket-adapter` | Controllers HTTP + WS |
-| `persistence-port-implementer` | TypeORM / SQL |
-| `solid-refactoring-coach` | Refino SOLID |
+| [`nest-feature-builder`](nest-feature-builder/SKILL.md) | Nova feature/módulo Nest |
+| [`typeorm-schema-updater`](typeorm-schema-updater/SKILL.md) | Tabelas/colunas |
+| [`auth-endpoint-builder`](auth-endpoint-builder/SKILL.md) | Endpoints `/auth` |
+| [`websocket-event-builder`](websocket-event-builder/SKILL.md) | Eventos `/ws/list` |
+| [`tdd-jest-driver`](tdd-jest-driver/SKILL.md) | Red-Green-Refactor |
 
-## Fluxo recomendado
+## Fluxo sugerido
 
-1. Modulo/pastas (`clean-architecture-guardian`)
-2. Service/fluxo (`use-case-orchestrator`)
-3. TDD (`tdd-test-driver`)
-4. HTTP/WS (`rest-websocket-adapter`)
-5. Persistencia (`persistence-port-implementer`)
-6. SOLID (`solid-refactoring-coach`)
+1. Ler `AGENTS.md`
+2. Feature → `nest-feature-builder`
+3. Schema → `typeorm-schema-updater`
+4. Auth REST → `auth-endpoint-builder`
+5. Realtime → `websocket-event-builder`
+6. Com testes → `tdd-jest-driver`
+
+## Idioma
+
+Código em **inglês**. Skills/docs para humanos podem ficar em português.

@@ -18,12 +18,14 @@ Módulos Nest típicos (sem Clean Architecture):
 ```text
 src/
   auth/              ← registro, login, JWT, SMTP, entidades TypeORM
-  shopping-list/     ← lista em memória + WebSocket
+  shopping-list/     ← itens no Postgres + WebSocket nativo
   main.ts
   app.module.ts
 database/
   init.sql           ← schema inicial (Postgres novo via Docker)
 ```
+
+Convenções do agente e skills: [`AGENTS.md`](AGENTS.md) e [`.cursor/skills/`](.cursor/skills/).
 
 ## Funcionalidades atuais
 

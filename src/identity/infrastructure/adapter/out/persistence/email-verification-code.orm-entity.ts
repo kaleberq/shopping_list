@@ -11,6 +11,9 @@ export class EmailVerificationCodeOrmEntity {
   @Column({ name: 'expires_at', type: 'timestamptz' })
   expiresAt!: Date;
 
+  @Column({ name: 'is_valid', type: 'boolean', default: true })
+  isValid!: boolean;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 }

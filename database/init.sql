@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS email_verification_code (
     email VARCHAR(255) PRIMARY KEY,
     code_hash VARCHAR(255) NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,
+    is_valid BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

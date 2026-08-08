@@ -32,13 +32,13 @@ export class VerifyAuthCodeUseCaseImpl extends VerifyAuthCodeUseCase {
       throw new InvalidVerificationCodeException();
     }
 
-    const verification = await this.verificationCodes.findByEmail(email);
+    const verification = await this.verificationCodes.findValidByEmail(email);
     if (!verification) {
       throw new InvalidVerificationCodeException();
     }
 
     if (verification.expiresAt.getTime() < Date.now()) {
-      await this.verificationCodes.deleteByEmail(email);
+      await this.verificationCodes.invalidateByEmail(email);
       throw new VerificationCodeExpiredException();
     }
 
@@ -53,7 +53,7 @@ export class VerifyAuthCodeUseCaseImpl extends VerifyAuthCodeUseCase {
       user = await this.users.create(email, name);
     }
 
-    await this.verificationCodes.deleteByEmail(email);
+    await this.verificationCodes.invalidateByEmail(email);
     return this.tokenIssuer.issue(user.id);
   }
 }

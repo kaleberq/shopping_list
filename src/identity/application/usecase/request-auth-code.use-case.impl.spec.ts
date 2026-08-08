@@ -3,8 +3,8 @@ import { RequestAuthCodeUseCaseImpl } from './request-auth-code.use-case.impl';
 describe('RequestAuthCodeUseCaseImpl', () => {
   const verificationCodes = {
     save: jest.fn(),
-    findByEmail: jest.fn(),
-    deleteByEmail: jest.fn(),
+    findValidByEmail: jest.fn(),
+    invalidateByEmail: jest.fn(),
   };
   const passwordHasher = {
     hash: jest.fn().mockResolvedValue('hashed-code'),
@@ -22,10 +22,10 @@ describe('RequestAuthCodeUseCaseImpl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useCase = new RequestAuthCodeUseCaseImpl(
-      verificationCodes,
-      passwordHasher,
-      verificationCodeSender,
-      settings,
+      verificationCodes as never,
+      passwordHasher as never,
+      verificationCodeSender as never,
+      settings as never,
     );
   });
 
@@ -37,6 +37,7 @@ describe('RequestAuthCodeUseCaseImpl', () => {
       expect.objectContaining({
         email: 'ada@example.com',
         codeHash: 'hashed-code',
+        isValid: true,
       }),
     );
     expect(verificationCodeSender.send).toHaveBeenCalledWith(

@@ -19,11 +19,12 @@ export class TypeOrmEmailVerificationCodeRepository extends EmailVerificationCod
       email: code.email,
       codeHash: code.codeHash,
       expiresAt: code.expiresAt,
+      isValid: code.isValid,
     });
   }
 
-  async findByEmail(email: string): Promise<EmailVerificationCode | null> {
-    const row = await this.codes.findOne({ where: { email } });
+  async findValidByEmail(email: string): Promise<EmailVerificationCode | null> {
+    const row = await this.codes.findOne({ where: { email, isValid: true } });
     if (!row) {
       return null;
     }
@@ -31,10 +32,11 @@ export class TypeOrmEmailVerificationCodeRepository extends EmailVerificationCod
       email: row.email,
       codeHash: row.codeHash,
       expiresAt: row.expiresAt,
+      isValid: row.isValid,
     };
   }
 
-  async deleteByEmail(email: string): Promise<void> {
-    await this.codes.delete({ email });
+  async invalidateByEmail(email: string): Promise<void> {
+    await this.codes.update({ email }, { isValid: false });
   }
 }

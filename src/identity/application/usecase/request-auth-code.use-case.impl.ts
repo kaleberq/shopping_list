@@ -35,6 +35,7 @@ export class RequestAuthCodeUseCaseImpl extends RequestAuthCodeUseCase {
       email,
       codeHash: await this.passwordHasher.hash(plainCode),
       expiresAt,
+      isValid: true,
     });
     await this.verificationCodeSender.send(email, plainCode);
 

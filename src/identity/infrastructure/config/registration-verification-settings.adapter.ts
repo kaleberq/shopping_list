@@ -9,6 +9,8 @@ export class RegistrationVerificationSettingsAdapter extends RegistrationVerific
   }
 
   codeExpirationMinutes(): number {
-    return Number(this.config.get('VERIFICATION_CODE_EXPIRATION_MINUTES', '15'));
+    return Number(
+      this.config.get('VERIFICATION_CODE_EXPIRATION_MINUTES', '15'),
+    );
   }
 }

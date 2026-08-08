@@ -1,17 +1,3 @@
-export class EmailAlreadyInUseException extends Error {
-  constructor(email: string) {
-    super(`Email already in use: ${email}`);
-    this.name = 'EmailAlreadyInUseException';
-  }
-}
-
-export class InvalidCredentialsException extends Error {
-  constructor() {
-    super('Invalid email or password');
-    this.name = 'InvalidCredentialsException';
-  }
-}
-
 export class InvalidVerificationCodeException extends Error {
   constructor() {
     super('Invalid or expired verification code');

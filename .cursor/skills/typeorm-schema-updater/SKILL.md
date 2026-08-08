@@ -19,7 +19,7 @@ Atualiza schema via entities TypeORM + `database/init.sql`.
 | Camada | Convenção |
 |--------|-----------|
 | Tabela | snake_case plural (`shopping_list_items`) |
-| Coluna SQL | snake_case (`list_id`, `password_hash`) |
+| Coluna SQL | snake_case (`list_id`, `created_at`) |
 | Property TS | camelCase + `@Column({ name: 'list_id' })` |
 | Entity | PascalCase + `Entity` (`ShoppingListItemEntity`) |
 

@@ -7,9 +7,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
-  EmailAlreadyInUseException,
   EmailDeliveryException,
-  InvalidCredentialsException,
   InvalidVerificationCodeException,
   VerificationCodeExpiredException,
 } from '../../../../domain/exception/identity.exceptions';
@@ -20,17 +18,15 @@ export class AuthExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    if (exception instanceof EmailAlreadyInUseException) {
-      return response.status(HttpStatus.CONFLICT).json({ message: exception.message });
-    }
-    if (exception instanceof InvalidCredentialsException) {
-      return response.status(HttpStatus.UNAUTHORIZED).json({ message: exception.message });
-    }
     if (exception instanceof InvalidVerificationCodeException) {
-      return response.status(HttpStatus.BAD_REQUEST).json({ message: exception.message });
+      return response
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: exception.message });
     }
     if (exception instanceof VerificationCodeExpiredException) {
-      return response.status(HttpStatus.GONE).json({ message: exception.message });
+      return response
+        .status(HttpStatus.GONE)
+        .json({ message: exception.message });
     }
     if (exception instanceof EmailDeliveryException) {
       return response
@@ -47,14 +43,10 @@ export class AuthExceptionFilter implements ExceptionFilter {
             : ((body as { message?: string }).message ?? 'Validation failed');
       return response.status(HttpStatus.BAD_REQUEST).json({ message });
     }
-    if (exception instanceof Error && exception.message) {
-      const known =
-        exception.message === 'Invalid email' ||
-        exception.message === 'Name is required' ||
-        exception.message.startsWith('Password must');
-      if (known) {
-        return response.status(HttpStatus.BAD_REQUEST).json({ message: exception.message });
-      }
+    if (exception instanceof Error && exception.message === 'Invalid email') {
+      return response
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: exception.message });
     }
 
     const message =

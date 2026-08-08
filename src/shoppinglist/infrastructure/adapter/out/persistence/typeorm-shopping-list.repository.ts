@@ -22,8 +22,13 @@ export class TypeOrmShoppingListRepository extends ShoppingListRepository {
     return rows.map((row) => this.toDomain(row));
   }
 
-  async saveItem(listId: string, item: ShoppingListItem): Promise<ShoppingListItem[]> {
-    const existing = await this.items.findOne({ where: { itemId: item.itemId } });
+  async saveItem(
+    listId: string,
+    item: ShoppingListItem,
+  ): Promise<ShoppingListItem[]> {
+    const existing = await this.items.findOne({
+      where: { itemId: item.itemId },
+    });
     if (existing) {
       existing.listId = listId;
       existing.description = item.description;

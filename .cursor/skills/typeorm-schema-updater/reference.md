@@ -36,6 +36,6 @@ CONSTRAINT uk_users_email UNIQUE (email)
 
 ## Tabelas atuais
 
-- `users` — id, email, name, password_hash, created_at, updated_at
+- `users` — id, email, name, created_at, updated_at
 - `email_verification_code` — email PK, code_hash, expires_at, created_at
 - `shopping_list_items` — item_id PK, list_id, description, price, expiry, created_at, updated_at

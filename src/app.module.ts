@@ -22,7 +22,11 @@ import { ShoppingListModule } from './shoppinglist/infrastructure/shoppinglist.m
         username: config.get<string>('DATABASE_USER', 'shopping_list'),
         password: config.get<string>('DATABASE_PASSWORD', 'shopping_list'),
         database: config.get<string>('DATABASE_NAME', 'shopping_list'),
-        entities: [UserOrmEntity, EmailVerificationCodeOrmEntity, ShoppingListItemOrmEntity],
+        entities: [
+          UserOrmEntity,
+          EmailVerificationCodeOrmEntity,
+          ShoppingListItemOrmEntity,
+        ],
         synchronize: config.get<string>('TYPEORM_SYNC', 'true') === 'true',
       }),
     }),

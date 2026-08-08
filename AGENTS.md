@@ -80,15 +80,15 @@ database/
 - Controller / WS → só chama **port/in** (use case).
 - Use case → só chama **port/out** + domain.
 - TypeORM entities ficam em `infrastructure/.../persistence`, não no domain.
-- Domain `User` **não** expõe `passwordHash`.
+- Auth passwordless: sem senha em `users`; código por e-mail → JWT.
 
 ### Contratos Flutter
 
 | Canal | Contrato |
 |-------|----------|
-| REST | `POST /auth/register/request-code` (202), `/auth/register/confirm` (201), `/auth/login` (200) |
+| REST | `POST /auth/request-code` (202), `/auth/verify` (200) |
 | Auth body | `{ accessToken, tokenType: "Bearer", expiresIn }` |
-| Erros auth | `{ message }` com 400 / 401 / 409 / 410 / 503 |
+| Erros auth | `{ message }` com 400 / 410 / 503 |
 | WS URL | `ws://host/ws/list?listId=...` (WebSocket nativo) |
 | WS events | `ITEM_ADDED` in → `LIST_UPDATED` out; JSON em inglês |
 

@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { IncomingMessage } from 'http';
 import { WebSocket, WebSocketServer } from 'ws';
@@ -28,7 +33,9 @@ export class ShoppingListWsServer implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
     const server = this.httpAdapterHost.httpAdapter.getHttpServer();
     this.wss = new WebSocketServer({ server, path: '/ws/list' });
-    this.wss.on('connection', (socket, request) => this.handleConnection(socket, request));
+    this.wss.on('connection', (socket, request) =>
+      this.handleConnection(socket, request),
+    );
     this.logger.log('WebSocket listening on /ws/list');
   }
 
@@ -77,7 +84,7 @@ export class ShoppingListWsServer implements OnModuleInit, OnModuleDestroy {
 
     const eventType = (root.type ?? '').trim();
     if (eventType === 'ITEM_ADDED') {
-      const payload = (root.payload ?? {}) as Record<string, unknown>;
+      const payload = root.payload ?? {};
       const items = await this.addListItem.execute({
         listId,
         itemId: this.stringValue(payload.itemId),
@@ -102,7 +109,11 @@ export class ShoppingListWsServer implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private sendListUpdated(socket: WebSocket, listId: string, items: ShoppingListItem[]) {
+  private sendListUpdated(
+    socket: WebSocket,
+    listId: string,
+    items: ShoppingListItem[],
+  ) {
     if (socket.readyState !== WebSocket.OPEN) {
       return;
     }

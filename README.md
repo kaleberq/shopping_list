@@ -69,32 +69,30 @@ docker compose up -d
 
 ## Autenticação (REST)
 
-Contratos iguais aos do app Flutter:
+Passwordless: cadastro e login usam o mesmo fluxo (código por e-mail → JWT). A app guarda o token.
 
 | Método | Path | Status |
 |--------|------|--------|
-| POST | `/auth/register/request-code` | 202 |
-| POST | `/auth/register/confirm` | 201 |
-| POST | `/auth/login` | 200 |
+| POST | `/auth/request-code` | 202 |
+| POST | `/auth/verify` | 200 |
 
-**Pedir código**
+**Pedir código** (novo ou existente)
 
 ```json
 { "email": "ana@example.com" }
 ```
 
-**Confirmar**
+**Verificar código** — se o e-mail for novo, cria o usuário (`name` opcional; senão usa a parte antes do `@`):
 
 ```json
 {
   "email": "ana@example.com",
   "code": "482910",
-  "name": "Ana",
-  "password": "senha1234"
+  "name": "Ana"
 }
 ```
 
-**Login** — mesmos campos de e-mail/senha; resposta:
+Resposta:
 
 ```json
 {
@@ -107,12 +105,10 @@ Contratos iguais aos do app Flutter:
 | Situação | HTTP |
 |----------|------|
 | Código enviado | 202 |
-| Conta criada / login ok | 201 / 200 |
+| Código ok (conta nova ou login) | 200 |
 | Código inválido | 400 |
 | Código expirado | 410 |
-| E-mail já cadastrado | 409 |
 | Falha SMTP | 503 |
-| Credenciais inválidas | 401 |
 
 ## WebSocket
 

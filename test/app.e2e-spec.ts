@@ -27,7 +27,10 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  it('/auth/login (POST) rejects empty body', () => {
-    return request(app.getHttpServer()).post('/auth/login').send({}).expect(400);
+  it('/auth/verify (POST) rejects empty body', () => {
+    return request(app.getHttpServer())
+      .post('/auth/verify')
+      .send({})
+      .expect(400);
   });
 });

@@ -14,25 +14,14 @@ export class TypeOrmUserRepository extends UserRepository {
     super();
   }
 
-  existsByEmail(email: string): Promise<boolean> {
-    return this.users.existsBy({ email });
-  }
-
-  async create(email: string, name: string, passwordHash: string): Promise<User> {
-    const saved = await this.users.save(
-      this.users.create({ email, name, passwordHash }),
-    );
+  async create(email: string, name: string): Promise<User> {
+    const saved = await this.users.save(this.users.create({ email, name }));
     return this.toDomain(saved);
   }
 
-  async findByEmailWithPasswordHash(
-    email: string,
-  ): Promise<{ user: User; passwordHash: string } | null> {
+  async findByEmail(email: string): Promise<User | null> {
     const row = await this.users.findOne({ where: { email } });
-    if (!row) {
-      return null;
-    }
-    return { user: this.toDomain(row), passwordHash: row.passwordHash };
+    return row ? this.toDomain(row) : null;
   }
 
   private toDomain(row: UserOrmEntity): User {

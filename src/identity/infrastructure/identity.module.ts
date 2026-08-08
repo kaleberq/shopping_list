@@ -3,18 +3,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfirmRegistrationUseCase } from '../application/port/in/confirm-registration.use-case';
-import { LoginUserUseCase } from '../application/port/in/login-user.use-case';
-import { RequestRegistrationCodeUseCase } from '../application/port/in/request-registration-code.use-case';
+import { RequestAuthCodeUseCase } from '../application/port/in/request-auth-code.use-case';
+import { VerifyAuthCodeUseCase } from '../application/port/in/verify-auth-code.use-case';
 import { EmailVerificationCodeRepository } from '../application/port/out/email-verification-code.repository';
 import { PasswordHasher } from '../application/port/out/password-hasher';
 import { RegistrationVerificationSettings } from '../application/port/out/registration-verification.settings';
 import { TokenIssuer } from '../application/port/out/token-issuer';
 import { UserRepository } from '../application/port/out/user.repository';
 import { VerificationCodeSender } from '../application/port/out/verification-code-sender';
-import { ConfirmRegistrationUseCaseImpl } from '../application/usecase/confirm-registration.use-case.impl';
-import { LoginUserUseCaseImpl } from '../application/usecase/login-user.use-case.impl';
-import { RequestRegistrationCodeUseCaseImpl } from '../application/usecase/request-registration-code.use-case.impl';
+import { RequestAuthCodeUseCaseImpl } from '../application/usecase/request-auth-code.use-case.impl';
+import { VerifyAuthCodeUseCaseImpl } from '../application/usecase/verify-auth-code.use-case.impl';
 import { AuthController } from './adapter/in/web/auth.controller';
 import { NodemailerVerificationCodeSender } from './adapter/out/email/nodemailer-verification-code.sender';
 import { EmailVerificationCodeOrmEntity } from './adapter/out/persistence/email-verification-code.orm-entity';
@@ -50,20 +48,22 @@ import { RegistrationVerificationSettingsAdapter } from './config/registration-v
     },
     { provide: PasswordHasher, useClass: BcryptPasswordHasher },
     { provide: TokenIssuer, useClass: JwtTokenIssuer },
-    { provide: VerificationCodeSender, useClass: NodemailerVerificationCodeSender },
+    {
+      provide: VerificationCodeSender,
+      useClass: NodemailerVerificationCodeSender,
+    },
     {
       provide: RegistrationVerificationSettings,
       useClass: RegistrationVerificationSettingsAdapter,
     },
     {
-      provide: RequestRegistrationCodeUseCase,
-      useClass: RequestRegistrationCodeUseCaseImpl,
+      provide: RequestAuthCodeUseCase,
+      useClass: RequestAuthCodeUseCaseImpl,
     },
     {
-      provide: ConfirmRegistrationUseCase,
-      useClass: ConfirmRegistrationUseCaseImpl,
+      provide: VerifyAuthCodeUseCase,
+      useClass: VerifyAuthCodeUseCaseImpl,
     },
-    { provide: LoginUserUseCase, useClass: LoginUserUseCaseImpl },
     JwtStrategy,
   ],
   exports: [JwtModule, PassportModule],

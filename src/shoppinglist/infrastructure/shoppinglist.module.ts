@@ -12,7 +12,10 @@ import { TypeOrmShoppingListRepository } from './adapter/out/persistence/typeorm
 @Module({
   imports: [TypeOrmModule.forFeature([ShoppingListItemOrmEntity])],
   providers: [
-    { provide: ShoppingListRepository, useClass: TypeOrmShoppingListRepository },
+    {
+      provide: ShoppingListRepository,
+      useClass: TypeOrmShoppingListRepository,
+    },
     { provide: AddListItemUseCase, useClass: AddListItemUseCaseImpl },
     { provide: GetListItemsUseCase, useClass: GetListItemsUseCaseImpl },
     ShoppingListWsServer,

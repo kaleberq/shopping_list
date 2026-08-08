@@ -55,7 +55,8 @@ export class NodemailerVerificationCodeSender extends VerificationCodeSender {
       });
     } catch (error) {
       const message =
-        error instanceof Error && /auth|credential|invalid login/i.test(error.message)
+        error instanceof Error &&
+        /auth|credential|invalid login/i.test(error.message)
           ? 'Nao foi possivel enviar o e-mail. No .env use uma senha de app do Google ' +
             '(https://myaccount.google.com/apppasswords), nao a senha normal da conta.'
           : 'Nao foi possivel enviar o e-mail. Verifique o SMTP no .env.';

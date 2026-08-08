@@ -16,7 +16,9 @@ export class AddListItemUseCaseImpl extends AddListItemUseCase {
       return this.shoppingListRepository.findAll(command.listId);
     }
 
-    const itemId = command.itemId?.trim() ? command.itemId.trim() : randomUUID();
+    const itemId = command.itemId?.trim()
+      ? command.itemId.trim()
+      : randomUUID();
     const item: ShoppingListItem = {
       itemId,
       description: command.description,

@@ -1,20 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import {
-  EmailAlreadyInUseException,
   InvalidVerificationCodeException,
   VerificationCodeExpiredException,
 } from '../../domain/exception/identity.exceptions';
 import { AuthTokenResult } from '../dto/auth-token.result';
-import { ConfirmRegistrationCommand } from '../dto/confirm-registration.command';
-import { ConfirmRegistrationUseCase } from '../port/in/confirm-registration.use-case';
+import { VerifyAuthCodeCommand } from '../dto/verify-auth-code.command';
+import { VerifyAuthCodeUseCase } from '../port/in/verify-auth-code.use-case';
 import { EmailVerificationCodeRepository } from '../port/out/email-verification-code.repository';
 import { PasswordHasher } from '../port/out/password-hasher';
 import { TokenIssuer } from '../port/out/token-issuer';
 import { UserRepository } from '../port/out/user.repository';
-import { RegistrationInputValidator } from './registration-input.validator';
+import { AuthInputValidator } from './auth-input.validator';
 
 @Injectable()
-export class ConfirmRegistrationUseCaseImpl extends ConfirmRegistrationUseCase {
+export class VerifyAuthCodeUseCaseImpl extends VerifyAuthCodeUseCase {
   constructor(
     private readonly verificationCodes: EmailVerificationCodeRepository,
     private readonly users: UserRepository,
@@ -24,10 +23,10 @@ export class ConfirmRegistrationUseCaseImpl extends ConfirmRegistrationUseCase {
     super();
   }
 
-  async execute(command: ConfirmRegistrationCommand): Promise<AuthTokenResult> {
-    const email = RegistrationInputValidator.normalizeEmail(command.email);
+  async execute(command: VerifyAuthCodeCommand): Promise<AuthTokenResult> {
+    const email = AuthInputValidator.normalizeEmail(command.email);
     const code = (command.code ?? '').trim();
-    RegistrationInputValidator.validate(email, command.name, command.password);
+    AuthInputValidator.validateEmail(email);
 
     if (!code) {
       throw new InvalidVerificationCodeException();
@@ -47,16 +46,13 @@ export class ConfirmRegistrationUseCaseImpl extends ConfirmRegistrationUseCase {
       throw new InvalidVerificationCodeException();
     }
 
-    if (await this.users.existsByEmail(email)) {
-      await this.verificationCodes.deleteByEmail(email);
-      throw new EmailAlreadyInUseException(email);
+    let user = await this.users.findByEmail(email);
+    if (!user) {
+      const name =
+        command.name?.trim() || AuthInputValidator.defaultNameFromEmail(email);
+      user = await this.users.create(email, name);
     }
 
-    const user = await this.users.create(
-      email,
-      command.name.trim(),
-      await this.passwordHasher.hash(command.password),
-    );
     await this.verificationCodes.deleteByEmail(email);
     return this.tokenIssuer.issue(user.id);
   }

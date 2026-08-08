@@ -14,7 +14,9 @@ export class JwtTokenIssuer extends TokenIssuer {
   }
 
   async issue(userId: string): Promise<AuthTokenResult> {
-    const expiresMinutes = Number(this.config.get('JWT_EXPIRATION_MINUTES', '60'));
+    const expiresMinutes = Number(
+      this.config.get('JWT_EXPIRATION_MINUTES', '60'),
+    );
     const expiresIn = expiresMinutes * 60;
     const accessToken = await this.jwtService.signAsync(
       { sub: String(userId) },

@@ -9,7 +9,7 @@ Ciclo Red-Green-Refactor alinhado ao `AGENTS.md`.
 
 ## Rules
 
-- Preferir unit em services com mocks de `Repository` / `JwtService` / `MailService`.
+- Preferir unit em **use cases** com mocks das **ports/out**.
 - E2E sem SMTP real.
 - Nunca gravar secrets em fixtures.
 

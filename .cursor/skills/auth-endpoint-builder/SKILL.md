@@ -5,7 +5,7 @@ description: Adds or changes REST auth endpoints under /auth in shopping_list Ne
 
 # Auth Endpoint Builder
 
-Workflow para endpoints em `src/auth`.
+Workflow para endpoints em `src/identity` (adapter HTTP + use cases).
 
 ## ⚠️ CRITICAL SAFETY RULES ⚠️
 
@@ -27,18 +27,19 @@ Erros: 400 / 401 / 409 / 410 / 503 via `AuthExceptionFilter`.
 ## Workflow
 
 1. Perguntar: novo endpoint ou alteração? Autenticado?
-2. DTO em `src/auth/dto/*.dto.ts`
-3. Método em `AuthService`
-4. Rota thin em `auth.controller.ts` + `@HttpCode`
-5. Exceptions + filter se status novo
-6. SMTP só via `MailService`
-7. Checklist
+2. Command/result em `application/dto/`
+3. Port in + use case impl em `application/`
+4. Port out se precisar de DB/mail/token
+5. HTTP DTO + rota thin em `infrastructure/adapter/in/web/`
+6. Bind no `identity.module.ts`
+7. Exceptions de domínio + filter
+8. Checklist
 
 ## Checklist
 
-- [ ] DTO validado
-- [ ] Service sem HTTP status
-- [ ] Controller com status correto
+- [ ] DTO HTTP validado
+- [ ] Use case sem HTTP status
+- [ ] Controller só chama port/in
 - [ ] Filter cobre novas exceptions
 - [ ] Senha/código fora da resposta
 - [ ] Flutter informado se contrato mudou

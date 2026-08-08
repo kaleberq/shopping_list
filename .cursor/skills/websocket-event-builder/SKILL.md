@@ -5,12 +5,12 @@ description: Adds or changes native WebSocket events on /ws/list for shopping_li
 
 # WebSocket Event Builder
 
-Eventos em tempo real via **WebSocket nativo** (`ws`) em `ShoppingListWsServer`.
+Eventos em tempo real via **WebSocket nativo** (`ws`) no adapter `ShoppingListWsServer` (`shoppinglist/infrastructure`).
 
 ## ⚠️ CRITICAL SAFETY RULES ⚠️
 
 - **NEVER** trocar para Socket.IO sem pedido explícito.
-- **NEVER** colocar regra/TypeORM no handler WS — usar `ShoppingListService`.
+- **NEVER** colocar regra/TypeORM no handler WS — chamar use cases (`port/in`).
 - **NEVER** exigir JWT no WS sem o usuário pedir.
 - Chaves JSON e `type` em **inglês**.
 
@@ -25,8 +25,8 @@ Eventos em tempo real via **WebSocket nativo** (`ws`) em `ShoppingListWsServer`.
 ## Workflow
 
 1. Perguntar: inbound, outbound, ou ambos? Persiste?
-2. Se persistir → `ShoppingListService` (+ `typeorm-schema-updater` se schema mudar)
-3. Em `shopping-list.ws.ts`: parse seguro → branch por `type` → `await` service → broadcast
+2. Se persistir → use case + port/out (+ `typeorm-schema-updater` se schema mudar)
+3. Em `shopping-list.ws.ts`: parse seguro → branch por `type` → `await` use case → broadcast
 4. Checklist
 
 ## Template inbound
@@ -46,7 +46,7 @@ if (eventType === 'ITEM_REMOVED') {
 ## Checklist
 
 - [ ] Evento no WS server
-- [ ] Regra no service
+- [ ] Regra no use case
 - [ ] Sala por `listId`
 - [ ] Envelope JSON estável
 - [ ] Sem Socket.IO

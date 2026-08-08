@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth/auth.module';
-import { EmailVerificationCode } from './auth/entities/email-verification-code.entity';
-import { User } from './auth/entities/user.entity';
-import { ShoppingListItemEntity } from './shopping-list/entities/shopping-list-item.entity';
-import { ShoppingListModule } from './shopping-list/shopping-list.module';
+import { EmailVerificationCodeOrmEntity } from './identity/infrastructure/adapter/out/persistence/email-verification-code.orm-entity';
+import { UserOrmEntity } from './identity/infrastructure/adapter/out/persistence/user.orm-entity';
+import { IdentityModule } from './identity/infrastructure/identity.module';
+import { ShoppingListItemOrmEntity } from './shoppinglist/infrastructure/adapter/out/persistence/shopping-list-item.orm-entity';
+import { ShoppingListModule } from './shoppinglist/infrastructure/shoppinglist.module';
 
 @Module({
   imports: [
@@ -22,11 +22,11 @@ import { ShoppingListModule } from './shopping-list/shopping-list.module';
         username: config.get<string>('DATABASE_USER', 'shopping_list'),
         password: config.get<string>('DATABASE_PASSWORD', 'shopping_list'),
         database: config.get<string>('DATABASE_NAME', 'shopping_list'),
-        entities: [User, EmailVerificationCode, ShoppingListItemEntity],
+        entities: [UserOrmEntity, EmailVerificationCodeOrmEntity, ShoppingListItemOrmEntity],
         synchronize: config.get<string>('TYPEORM_SYNC', 'true') === 'true',
       }),
     }),
-    AuthModule,
+    IdentityModule,
     ShoppingListModule,
   ],
 })

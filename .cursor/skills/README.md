@@ -1,14 +1,14 @@
 # Agent skills (shopping_list)
 
-Workflows com regras de segurança, passos, gates e checklist para NestJS + TypeORM + WebSocket nativo.
+Workflows para **Clean Architecture** (domain / application / infrastructure) neste backend NestJS.
 
-Fonte de verdade: [`AGENTS.md`](../../AGENTS.md) (`CLAUDE.md` aponta para o mesmo arquivo).
+Fonte de verdade: [`AGENTS.md`](../../AGENTS.md).
 
 ## Skills
 
 | Skill | Uso |
 |-------|-----|
-| [`nest-feature-builder`](nest-feature-builder/SKILL.md) | Nova feature/módulo Nest |
+| [`nest-feature-builder`](nest-feature-builder/SKILL.md) | Nova fatia Clean Arch |
 | [`typeorm-schema-updater`](typeorm-schema-updater/SKILL.md) | Tabelas/colunas |
 | [`auth-endpoint-builder`](auth-endpoint-builder/SKILL.md) | Endpoints `/auth` |
 | [`websocket-event-builder`](websocket-event-builder/SKILL.md) | Eventos `/ws/list` |
@@ -17,12 +17,8 @@ Fonte de verdade: [`AGENTS.md`](../../AGENTS.md) (`CLAUDE.md` aponta para o mesm
 ## Fluxo sugerido
 
 1. Ler `AGENTS.md`
-2. Feature → `nest-feature-builder`
+2. Fatia → `nest-feature-builder`
 3. Schema → `typeorm-schema-updater`
 4. Auth REST → `auth-endpoint-builder`
 5. Realtime → `websocket-event-builder`
-6. Com testes → `tdd-jest-driver`
-
-## Idioma
-
-Código em **inglês**. Skills/docs para humanos podem ficar em português.
+6. Testes → `tdd-jest-driver`

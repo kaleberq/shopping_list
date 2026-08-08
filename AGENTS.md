@@ -25,47 +25,62 @@ cp .env.example .env
 
 Antes de PR: `npm run build` + `npm run lint` + `npm test`.
 
-## Architecture
+## Architecture — Clean Architecture
 
-Composition root: `src/app.module.ts`.
+Fatias verticais com camadas **domain → application → infrastructure**.  
+A regra de dependência: camadas internas **não** importam externas.  
+O `*.module.ts` do Nest fica só em **infrastructure** (composition root / DI) — não é “arquitetura modular” de controllers/services flat.
 
 ```text
 src/
-  auth/                 # registro 2 passos, login, JWT, SMTP
-    auth.module.ts
-    auth.controller.ts  # HTTP
-    auth.service.ts     # regras
-    dto/
-    entities/
-    exceptions/
-    mail.service.ts
-    jwt.strategy.ts
-    jwt-auth.guard.ts
-  shopping-list/
-    shopping-list.module.ts
-    shopping-list.service.ts
-    shopping-list.ws.ts # WebSocket nativo
-    entities/
+  identity/
+    domain/
+      model/
+      exception/
+    application/
+      dto/                 # commands / results
+      port/in/             # use case contracts
+      port/out/            # repository, hasher, mail, token…
+      usecase/             # use case implementations
+    infrastructure/
+      adapter/in/web/      # AuthController, HTTP DTOs, filter
+      adapter/out/
+        persistence/       # TypeORM entities + adapters
+        email/
+        security/
+      config/
+      identity.module.ts   # wiring Nest only
+  shoppinglist/
+    domain/model/
+    application/
+      dto/
+      port/in/
+      port/out/
+      usecase/
+    infrastructure/
+      adapter/in/websocket/
+      adapter/out/persistence/
+      shoppinglist.module.ts
+  app.module.ts            # composition root da app
   main.ts
-  app.module.ts
 database/
-  init.sql              # schema para Postgres novo
+  init.sql
 ```
 
-### Camadas (por feature)
+### Camadas
 
-| Papel | Onde |
-|-------|------|
-| presenter | `*.controller.ts`, `*.ws.ts`, `dto/` |
-| use-cases | `*.service.ts` |
-| data-access | `entities/` + `Repository` TypeORM no service |
-| providers | `mail.service.ts`, JWT via `@nestjs/jwt` |
+| Camada | Responsabilidade | Pode depender de |
+|--------|------------------|------------------|
+| **domain** | Modelos e exceptions de negócio | nada de Nest/TypeORM |
+| **application** | Use cases + ports (in/out) | domain |
+| **infrastructure** | HTTP, WS, TypeORM, SMTP, JWT | application + domain |
 
 **Regras**
 
-- Controller / WS → só chama service (sem TypeORM, Nodemailer, bcrypt).
-- Service → regras + repositórios / mail / jwt.
-- Entity → mapeamento de tabela.
+- Controller / WS → só chama **port/in** (use case).
+- Use case → só chama **port/out** + domain.
+- TypeORM entities ficam em `infrastructure/.../persistence`, não no domain.
+- Domain `User` **não** expõe `passwordHash`.
 
 ### Contratos Flutter
 
@@ -81,7 +96,7 @@ database/
 
 - Tabelas: `users`, `email_verification_code`, `shopping_list_items`.
 - Dev: `TYPEORM_SYNC=true` (default); `database/init.sql` para volume novo.
-- SQL: snake_case; TypeScript: camelCase + `@Column({ name: '...' })`.
+- SQL: snake_case; TypeScript ORM: camelCase + `@Column({ name: '...' })`.
 
 ### Auth
 
@@ -95,14 +110,14 @@ database/
 - JSON da API/WS em **inglês**.
 - Secrets só via `.env` / `ConfigService`. O agente **nunca** lê/edita `.env` (só `.env.example`).
 - Conventional Commits preferidos (`feat:`, `fix:`, `chore:`…).
-- Testes: `*.spec.ts` ao lado do código; e2e em `test/`.
+- Testes: unitários nos use cases (mock de ports); e2e em `test/`.
 - Mudanças cirúrgicas: só o necessário para o pedido.
 
 ## Skills
 
 | Skill | Quando usar |
 |-------|-------------|
-| `nest-feature-builder` | Nova feature/módulo Nest |
+| `nest-feature-builder` | Nova fatia Clean Arch |
 | `typeorm-schema-updater` | Mudança de tabela/coluna |
 | `auth-endpoint-builder` | Novo endpoint em `/auth` |
 | `websocket-event-builder` | Novo evento no `/ws/list` |

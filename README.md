@@ -13,19 +13,21 @@ Backend de uma aplicação de **lista de compras colaborativa** em tempo real, c
 
 ## Estrutura
 
-Módulos Nest típicos (sem Clean Architecture):
+**Clean Architecture** em fatias verticais (`identity`, `shoppinglist`):
 
 ```text
 src/
-  auth/              ← registro, login, JWT, SMTP, entidades TypeORM
-  shopping-list/     ← itens no Postgres + WebSocket nativo
-  main.ts
+  identity/
+    domain/ application/ infrastructure/
+  shoppinglist/
+    domain/ application/ infrastructure/
   app.module.ts
+  main.ts
 database/
-  init.sql           ← schema inicial (Postgres novo via Docker)
+  init.sql
 ```
 
-Convenções do agente e skills: [`AGENTS.md`](AGENTS.md) e [`.cursor/skills/`](.cursor/skills/).
+Convenções: [`AGENTS.md`](AGENTS.md) e [`.cursor/skills/`](.cursor/skills/).
 
 ## Funcionalidades atuais
 

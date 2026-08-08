@@ -27,7 +27,7 @@ Atualiza schema via entities TypeORM + `database/init.sql`.
 
 1. Verificar pré-requisitos (tabela existe? FK?)
 2. Clarificar nullable / default / índice / unique
-3. Atualizar entity em `src/**/entities/`
+3. Atualizar ORM entity em `infrastructure/adapter/out/persistence/`
 4. Registrar em `forFeature` + `forRoot` `entities`
 5. Atualizar `database/init.sql` (`IF NOT EXISTS`)
 6. Com `TYPEORM_SYNC=true`, restart do Nest alinha em dev

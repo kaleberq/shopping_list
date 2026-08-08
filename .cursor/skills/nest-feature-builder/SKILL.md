@@ -1,79 +1,67 @@
 ---
 name: nest-feature-builder
-description: Scaffolds a new NestJS feature module for shopping_list (module, controller or WS, service, DTOs, entities). Use when the user asks to add a feature, module, endpoint group, or domain slice. Follows presenter → service → data-access from AGENTS.md.
+description: Scaffolds a Clean Architecture vertical slice for shopping_list (domain, application ports/use cases, infrastructure adapters). Use when the user asks to add a feature, use case, endpoint, or domain slice.
 ---
 
-# Nest Feature Builder
+# Nest Feature Builder (Clean Architecture)
 
-Cria uma feature Nest neste repositório com passos, gates e checklist.
+Cria uma fatia vertical com camadas Clean Architecture.
 
 ## ⚠️ CRITICAL SAFETY RULES ⚠️
 
-- **NEVER** ler, editar ou imprimir `.env` / `.env.*` (exceto `.env.example`).
+- **NEVER** ler/editar `.env` (exceto `.env.example`).
 - **NEVER** commit/push a menos que o usuário peça.
-- **NEVER** rodar `docker compose down -v` sem confirmação explícita.
-- **NEVER** quebrar contratos Flutter de `AGENTS.md` / `README.md` sem avisar e pedir ok.
-- **ALWAYS** ler `AGENTS.md` antes de estruturar pastas.
-- **ALWAYS** código-fonte em inglês.
+- **NEVER** rodar `docker compose down -v` sem confirmação.
+- **NEVER** quebrar contratos Flutter sem combinar.
+- **ALWAYS** ler `AGENTS.md` primeiro.
+- **ALWAYS** código em inglês.
+- Domain/application **não** importam Nest controllers, TypeORM entities ou Nodemailer (use cases podem usar `@Injectable` só para DI).
 
 ## Step 0 — Contexto
 
-1. Abrir `AGENTS.md`.
-2. Espelhar `src/auth` (REST) ou `src/shopping-list` (WS + TypeORM).
-3. Se o pedido for ambíguo, perguntar antes de criar arquivos.
+Espelhar `identity/` (REST) ou `shoppinglist/` (WS).
 
-## Step 1 — Perguntas de gating (português)
+## Step 1 — Gating (português)
 
-1. Nome da feature (kebab, ex.: `list-members`).
+1. Nome da fatia (ex.: `list-members`).
 2. Borda: REST, WebSocket, ou ambos?
-3. Precisa de tabela nova? Se sim → usar também `typeorm-schema-updater`.
-4. Rota autenticada? Se sim → `JwtAuthGuard`.
+3. Tabela nova? → `typeorm-schema-updater`.
+4. Autenticado? → `JwtAuthGuard` no adapter in.
 
 ## Step 2 — Scaffold
 
 ```text
-src/<feature>/
-  <feature>.module.ts
-  <feature>.service.ts
-  <feature>.controller.ts       # se REST
-  dto/
-  entities/                     # se persistir
+src/<slice>/
+  domain/model/
+  domain/exception/
+  application/
+    dto/
+    port/in/
+    port/out/
+    usecase/
+  infrastructure/
+    adapter/in/...
+    adapter/out/...
+    <slice>.module.ts
 ```
 
-Registrar em `src/app.module.ts` `imports`.
-
-Para eventos da lista, preferir estender `shopping-list.ws.ts` / service em vez de novo path WS, salvo pedido de URL nova.
+Registrar o module de infrastructure em `app.module.ts`.
 
 ## Step 3 — Camadas
 
-### Presenter
+1. **domain** — tipos e exceptions puras.
+2. **port/in** — abstract use case; **port/out** — abstract repos/providers.
+3. **usecase** — implementa port/in; depende só de port/out + domain.
+4. **adapter in** — controller/WS thin → use case.
+5. **adapter out** — TypeORM/SMTP/JWT implementam port/out.
+6. **module** — `{ provide: Port, useClass: Adapter }`.
 
-- Thin: DTO → service → resposta.
-- Sem `Repository`, bcrypt, Nodemailer.
-- HTTP: `class-validator`; `@HttpCode` explícito.
+## Checklist
 
-### Service
-
-- Métodos públicos com responsabilidade clara.
-- Injeta TypeORM / outros services.
-- Não monta status HTTP.
-
-### Data-access
-
-- Entity em `entities/`.
-- `TypeOrmModule.forFeature` **e** array `entities` em `app.module.ts`.
-
-## Step 4 — Checklist
-
-- [ ] Módulo criado e importado em `AppModule`
-- [ ] Presenter thin; service com regras
-- [ ] DTOs validados (se REST)
-- [ ] Entities registradas (se DB)
+- [ ] Domain sem framework
+- [ ] Use case sem HTTP/WS/TypeORM entity
+- [ ] Adapters thin
+- [ ] Ports bound no module
+- [ ] ORM entity no `forRoot` entities
 - [ ] Contratos Flutter ok
-- [ ] Sem secrets no código
-- [ ] `npm run build` passa (se executado)
-
-## Notes
-
-- Não introduzir Socket.IO: o cliente usa WebSocket nativo.
-- Não criar monorepo/`libs/` sem pedido explícito.
+- [ ] `npm run build` passa

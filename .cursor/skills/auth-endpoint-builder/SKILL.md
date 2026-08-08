@@ -13,6 +13,7 @@ Workflow para endpoints em `src/identity` (adapter HTTP + use cases).
 - **NEVER** logar código em claro ou JWT completo.
 - **NEVER** retornar `codeHash` na resposta.
 - Auth é **passwordless** (sem senha em `users`).
+- **Cadastro (`/auth/verify`) não retorna token** — só `/auth/login`.
 - Preservar status codes e shapes atuais salvo breaking change combinada.
 
 ## Contratos atuais
@@ -20,9 +21,10 @@ Workflow para endpoints em `src/identity` (adapter HTTP + use cases).
 | Method | Path | Status | In | Out |
 |--------|------|--------|----|-----|
 | POST | `/auth/request-code` | 202 | `{ email }` | `{ message }` |
-| POST | `/auth/verify` | 200 | `{ email, code, name? }` | token |
+| POST | `/auth/verify` | 201 | `{ email, code, name? }` | `{ message }` |
+| POST | `/auth/login` | 200 | `{ email, code }` | token |
 
-Erros: 400 / 410 / 503 via `AuthExceptionFilter`.
+Erros: 400 / 401 / 409 / 410 / 503 via `AuthExceptionFilter`.
 
 ## Workflow
 
@@ -49,5 +51,5 @@ Erros: 400 / 410 / 503 via `AuthExceptionFilter`.
 - Email: trim + lower-case.
 - Código 6 dígitos.
 - `request-code` serve cadastro e login.
-- `verify` cria usuário se e-mail novo (`name` opcional).
+- `verify` só cria conta; `login` emite JWT.
 - JWT `sub` = string de `users.id`.

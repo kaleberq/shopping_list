@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoginWithCodeUseCase } from '../application/port/in/login-with-code.use-case';
 import { RequestAuthCodeUseCase } from '../application/port/in/request-auth-code.use-case';
 import { VerifyAuthCodeUseCase } from '../application/port/in/verify-auth-code.use-case';
 import { EmailVerificationCodeRepository } from '../application/port/out/email-verification-code.repository';
@@ -11,6 +12,7 @@ import { RegistrationVerificationSettings } from '../application/port/out/regist
 import { TokenIssuer } from '../application/port/out/token-issuer';
 import { UserRepository } from '../application/port/out/user.repository';
 import { VerificationCodeSender } from '../application/port/out/verification-code-sender';
+import { LoginWithCodeUseCaseImpl } from '../application/usecase/login-with-code.use-case.impl';
 import { RequestAuthCodeUseCaseImpl } from '../application/usecase/request-auth-code.use-case.impl';
 import { VerifyAuthCodeUseCaseImpl } from '../application/usecase/verify-auth-code.use-case.impl';
 import { AuthController } from './adapter/in/web/auth.controller';
@@ -63,6 +65,10 @@ import { RegistrationVerificationSettingsAdapter } from './config/registration-v
     {
       provide: VerifyAuthCodeUseCase,
       useClass: VerifyAuthCodeUseCaseImpl,
+    },
+    {
+      provide: LoginWithCodeUseCase,
+      useClass: LoginWithCodeUseCaseImpl,
     },
     JwtStrategy,
   ],

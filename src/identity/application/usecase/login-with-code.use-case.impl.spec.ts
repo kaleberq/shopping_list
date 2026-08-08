@@ -1,11 +1,10 @@
 import {
-  EmailAlreadyInUseException,
   InvalidVerificationCodeException,
-  VerificationCodeExpiredException,
+  UserNotFoundException,
 } from '../../domain/exception/identity.exceptions';
-import { VerifyAuthCodeUseCaseImpl } from './verify-auth-code.use-case.impl';
+import { LoginWithCodeUseCaseImpl } from './login-with-code.use-case.impl';
 
-describe('VerifyAuthCodeUseCaseImpl', () => {
+describe('LoginWithCodeUseCaseImpl', () => {
   const verificationCodes = {
     save: jest.fn(),
     findValidByEmail: jest.fn(),
@@ -19,45 +18,27 @@ describe('VerifyAuthCodeUseCaseImpl', () => {
     hash: jest.fn(),
     matches: jest.fn(),
   };
+  const tokenIssuer = {
+    issue: jest.fn().mockResolvedValue({
+      accessToken: 'token',
+      tokenType: 'Bearer',
+      expiresIn: 3600,
+    }),
+  };
 
-  let useCase: VerifyAuthCodeUseCaseImpl;
+  let useCase: LoginWithCodeUseCaseImpl;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useCase = new VerifyAuthCodeUseCaseImpl(
+    useCase = new LoginWithCodeUseCaseImpl(
       verificationCodes as never,
       users as never,
       passwordHasher as never,
+      tokenIssuer as never,
     );
   });
 
-  it('creates user and returns message without token', async () => {
-    verificationCodes.findValidByEmail.mockResolvedValue({
-      email: 'ada@example.com',
-      codeHash: 'hash',
-      expiresAt: new Date(Date.now() + 60_000),
-      isValid: true,
-    });
-    passwordHasher.matches.mockResolvedValue(true);
-    users.findByEmail.mockResolvedValue(null);
-    users.create.mockResolvedValue({ id: '1', email: 'ada@example.com' });
-
-    const result = await useCase.execute({
-      email: 'ada@example.com',
-      code: '123456',
-      name: 'Ada',
-    });
-
-    expect(users.create).toHaveBeenCalledWith('ada@example.com', 'Ada');
-    expect(verificationCodes.invalidateByEmail).toHaveBeenCalledWith(
-      'ada@example.com',
-    );
-    expect(result).toEqual({
-      message: 'Registration completed. Request a code to log in',
-    });
-  });
-
-  it('rejects when email is already registered', async () => {
+  it('returns token for existing user with valid code', async () => {
     verificationCodes.findValidByEmail.mockResolvedValue({
       email: 'ada@example.com',
       codeHash: 'hash',
@@ -67,29 +48,35 @@ describe('VerifyAuthCodeUseCaseImpl', () => {
     passwordHasher.matches.mockResolvedValue(true);
     users.findByEmail.mockResolvedValue({ id: '9', email: 'ada@example.com' });
 
-    await expect(
-      useCase.execute({ email: 'ada@example.com', code: '123456' }),
-    ).rejects.toBeInstanceOf(EmailAlreadyInUseException);
-    expect(users.create).not.toHaveBeenCalled();
-  });
-
-  it('rejects expired code and invalidates it', async () => {
-    verificationCodes.findValidByEmail.mockResolvedValue({
+    const result = await useCase.execute({
       email: 'ada@example.com',
-      codeHash: 'hash',
-      expiresAt: new Date(Date.now() - 1),
-      isValid: true,
+      code: '123456',
     });
 
-    await expect(
-      useCase.execute({ email: 'ada@example.com', code: '123456' }),
-    ).rejects.toBeInstanceOf(VerificationCodeExpiredException);
+    expect(result.accessToken).toBe('token');
+    expect(tokenIssuer.issue).toHaveBeenCalledWith('9');
     expect(verificationCodes.invalidateByEmail).toHaveBeenCalledWith(
       'ada@example.com',
     );
   });
 
-  it('rejects invalid code without invalidating', async () => {
+  it('rejects when user does not exist', async () => {
+    verificationCodes.findValidByEmail.mockResolvedValue({
+      email: 'ada@example.com',
+      codeHash: 'hash',
+      expiresAt: new Date(Date.now() + 60_000),
+      isValid: true,
+    });
+    passwordHasher.matches.mockResolvedValue(true);
+    users.findByEmail.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute({ email: 'ada@example.com', code: '123456' }),
+    ).rejects.toBeInstanceOf(UserNotFoundException);
+    expect(tokenIssuer.issue).not.toHaveBeenCalled();
+  });
+
+  it('rejects invalid code', async () => {
     verificationCodes.findValidByEmail.mockResolvedValue({
       email: 'ada@example.com',
       codeHash: 'hash',
@@ -101,6 +88,5 @@ describe('VerifyAuthCodeUseCaseImpl', () => {
     await expect(
       useCase.execute({ email: 'ada@example.com', code: '000000' }),
     ).rejects.toBeInstanceOf(InvalidVerificationCodeException);
-    expect(verificationCodes.invalidateByEmail).not.toHaveBeenCalled();
   });
 });

@@ -69,20 +69,21 @@ docker compose up -d
 
 ## Autenticação (REST)
 
-Passwordless: cadastro e login usam o mesmo fluxo (código por e-mail → JWT). A app guarda o token.
+Passwordless em dois momentos: **cadastro** cria a conta; **login** devolve o JWT.
 
 | Método | Path | Status |
 |--------|------|--------|
 | POST | `/auth/request-code` | 202 |
-| POST | `/auth/verify` | 200 |
+| POST | `/auth/verify` | 201 |
+| POST | `/auth/login` | 200 |
 
-**Pedir código** (novo ou existente)
+**1) Pedir código**
 
 ```json
 { "email": "ana@example.com" }
 ```
 
-**Verificar código** — se o e-mail for novo, cria o usuário (`name` opcional; senão usa a parte antes do `@`):
+**2) Cadastro** — cria usuário, **sem token** (`name` opcional):
 
 ```json
 {
@@ -92,7 +93,18 @@ Passwordless: cadastro e login usam o mesmo fluxo (código por e-mail → JWT). 
 }
 ```
 
-Resposta:
+```json
+{ "message": "Registration completed. Request a code to log in" }
+```
+
+**3) Login** — pedir código de novo, depois:
+
+```json
+{
+  "email": "ana@example.com",
+  "code": "482910"
+}
+```
 
 ```json
 {
@@ -105,14 +117,19 @@ Resposta:
 | Situação | HTTP |
 |----------|------|
 | Código enviado | 202 |
-| Código ok (conta nova ou login) | 200 |
+| Cadastro ok | 201 |
+| Login ok | 200 |
 | Código inválido | 400 |
 | Código expirado | 410 |
+| E-mail já cadastrado | 409 |
+| Usuário inexistente no login | 401 |
 | Falha SMTP | 503 |
 
 ## WebSocket
 
 URL: `ws://localhost:8080/ws/list?listId=SUA_LISTA`
+
+Exige JWT do login no handshake: `Authorization: Bearer <accessToken>`.
 
 1. Ao conectar, o servidor envia `LIST_UPDATED` com `payload.items`.
 2. Cliente envia `ITEM_ADDED` com `description` (obrigatório), `price` e `expiry` opcionais.

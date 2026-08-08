@@ -18,3 +18,17 @@ export class EmailDeliveryException extends Error {
     this.name = 'EmailDeliveryException';
   }
 }
+
+export class EmailAlreadyInUseException extends Error {
+  constructor(email: string) {
+    super(`Email already in use: ${email}`);
+    this.name = 'EmailAlreadyInUseException';
+  }
+}
+
+export class UserNotFoundException extends Error {
+  constructor() {
+    super('User not found. Please register first');
+    this.name = 'UserNotFoundException';
+  }
+}

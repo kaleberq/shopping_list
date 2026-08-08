@@ -69,12 +69,11 @@ docker compose up -d
 
 ## Autenticação (REST)
 
-Passwordless em dois momentos: **cadastro** cria a conta; **login** devolve o JWT.
+Passwordless: pedir código → login (cria a conta se o e-mail for novo e devolve o JWT).
 
 | Método | Path | Status |
 |--------|------|--------|
 | POST | `/auth/request-code` | 202 |
-| POST | `/auth/verify` | 201 |
 | POST | `/auth/login` | 200 |
 
 **1) Pedir código**
@@ -83,21 +82,7 @@ Passwordless em dois momentos: **cadastro** cria a conta; **login** devolve o JW
 { "email": "ana@example.com" }
 ```
 
-**2) Cadastro** — cria usuário, **sem token** (`name` opcional):
-
-```json
-{
-  "email": "ana@example.com",
-  "code": "482910",
-  "name": "Ana"
-}
-```
-
-```json
-{ "message": "Registration completed. Request a code to log in" }
-```
-
-**3) Login** — pedir código de novo, depois:
+**2) Login / primeiro acesso**
 
 ```json
 {
@@ -117,12 +102,9 @@ Passwordless em dois momentos: **cadastro** cria a conta; **login** devolve o JW
 | Situação | HTTP |
 |----------|------|
 | Código enviado | 202 |
-| Cadastro ok | 201 |
-| Login ok | 200 |
+| Login ok (conta nova ou existente) | 200 |
 | Código inválido | 400 |
 | Código expirado | 410 |
-| E-mail já cadastrado | 409 |
-| Usuário inexistente no login | 401 |
 | Falha SMTP | 503 |
 
 ## WebSocket

@@ -86,9 +86,9 @@ database/
 
 | Canal | Contrato |
 |-------|----------|
-| REST | `POST /auth/request-code` (202), `/auth/verify` (201), `/auth/login` (200) |
+| REST | `POST /auth/request-code` (202), `/auth/login` (200) |
 | Auth body (login) | `{ accessToken, tokenType: "Bearer", expiresIn }` |
-| Erros auth | `{ message }` com 400 / 401 / 409 / 410 / 503 |
+| Erros auth | `{ message }` com 400 / 410 / 503 |
 | WS URL | `ws://host/ws/list?listId=...` (WebSocket nativo) |
 | WS auth | header `Authorization: Bearer <accessToken>` no handshake |
 | WS events | `ITEM_ADDED` in → `LIST_UPDATED` out; JSON em inglês |
@@ -102,7 +102,7 @@ database/
 ### Auth
 
 - JWT `sub` = `users.id`.
-- `/auth/**` público (request-code / verify / login).
+- `/auth/**` público (request-code / login).
 - `/ws/list` exige Bearer JWT válido no handshake.
 - Rotas HTTP futuras: `JwtAuthGuard` + `Authorization: Bearer …`.
 

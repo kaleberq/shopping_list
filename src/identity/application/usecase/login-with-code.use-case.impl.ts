@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UserNotFoundException } from '../../domain/exception/identity.exceptions';
 import { AuthTokenResult } from '../dto/auth-token.result';
 import { LoginWithCodeCommand } from '../dto/login-with-code.command';
 import { LoginWithCodeUseCase } from '../port/in/login-with-code.use-case';
@@ -33,9 +32,12 @@ export class LoginWithCodeUseCaseImpl extends LoginWithCodeUseCase {
       code,
     );
 
-    const user = await this.users.findByEmail(email);
+    let user = await this.users.findByEmail(email);
     if (!user) {
-      throw new UserNotFoundException();
+      user = await this.users.create(
+        email,
+        AuthInputValidator.defaultNameFromEmail(email),
+      );
     }
 
     await this.verificationCodes.invalidateByEmail(email);

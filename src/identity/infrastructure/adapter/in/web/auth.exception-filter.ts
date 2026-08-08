@@ -7,10 +7,8 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
-  EmailAlreadyInUseException,
   EmailDeliveryException,
   InvalidVerificationCodeException,
-  UserNotFoundException,
   VerificationCodeExpiredException,
 } from '../../../../domain/exception/identity.exceptions';
 
@@ -28,16 +26,6 @@ export class AuthExceptionFilter implements ExceptionFilter {
     if (exception instanceof VerificationCodeExpiredException) {
       return response
         .status(HttpStatus.GONE)
-        .json({ message: exception.message });
-    }
-    if (exception instanceof EmailAlreadyInUseException) {
-      return response
-        .status(HttpStatus.CONFLICT)
-        .json({ message: exception.message });
-    }
-    if (exception instanceof UserNotFoundException) {
-      return response
-        .status(HttpStatus.UNAUTHORIZED)
         .json({ message: exception.message });
     }
     if (exception instanceof EmailDeliveryException) {

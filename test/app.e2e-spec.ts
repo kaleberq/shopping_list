@@ -27,9 +27,9 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  it('/auth/verify (POST) rejects empty body', () => {
+  it('/auth/login (POST) rejects empty body', () => {
     return request(app.getHttpServer())
-      .post('/auth/verify')
+      .post('/auth/login')
       .send({})
       .expect(400);
   });

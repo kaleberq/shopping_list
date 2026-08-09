@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { randomInt } from 'crypto';
+import { EmailAlreadyInUseException } from '../../domain/exception/identity.exceptions';
 import { MessageResult } from '../dto/message.result';
 import { RequestAuthCodeCommand } from '../dto/request-auth-code.command';
 import { RequestAuthCodeUseCase } from '../port/in/request-auth-code.use-case';
 import { EmailVerificationCodeRepository } from '../port/out/email-verification-code.repository';
 import { PasswordHasher } from '../port/out/password-hasher';
 import { RegistrationVerificationSettings } from '../port/out/registration-verification.settings';
+import { UserRepository } from '../port/out/user.repository';
 import { VerificationCodeSender } from '../port/out/verification-code-sender';
 import { AuthInputValidator } from './auth-input.validator';
 
@@ -13,6 +15,7 @@ import { AuthInputValidator } from './auth-input.validator';
 export class RequestAuthCodeUseCaseImpl extends RequestAuthCodeUseCase {
   constructor(
     private readonly verificationCodes: EmailVerificationCodeRepository,
+    private readonly users: UserRepository,
     private readonly passwordHasher: PasswordHasher,
     private readonly verificationCodeSender: VerificationCodeSender,
     private readonly settings: RegistrationVerificationSettings,
@@ -23,6 +26,10 @@ export class RequestAuthCodeUseCaseImpl extends RequestAuthCodeUseCase {
   async execute(command: RequestAuthCodeCommand): Promise<MessageResult> {
     const email = AuthInputValidator.normalizeEmail(command.email);
     AuthInputValidator.validateEmail(email);
+
+    if (command.purpose === 'register' && (await this.users.findByEmail(email))) {
+      throw new EmailAlreadyInUseException(email);
+    }
 
     const plainCode = String(randomInt(0, 1_000_000)).padStart(6, '0');
     const expirationMinutes = Math.max(

@@ -6,9 +6,12 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { QueryFailedError } from 'typeorm';
 import {
+  EmailAlreadyInUseException,
   EmailDeliveryException,
   InvalidVerificationCodeException,
+  UserNotFoundException,
   VerificationCodeExpiredException,
 } from '../../../../domain/exception/identity.exceptions';
 
@@ -28,6 +31,21 @@ export class AuthExceptionFilter implements ExceptionFilter {
         .status(HttpStatus.GONE)
         .json({ message: exception.message });
     }
+    if (
+      exception instanceof EmailAlreadyInUseException ||
+      (exception instanceof Error &&
+        exception.name === 'EmailAlreadyInUseException') ||
+      isUniqueViolation(exception)
+    ) {
+      return response
+        .status(HttpStatus.CONFLICT)
+        .json({ message: 'Email already in use' });
+    }
+    if (exception instanceof UserNotFoundException) {
+      return response
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ message: exception.message });
+    }
     if (exception instanceof EmailDeliveryException) {
       return response
         .status(HttpStatus.SERVICE_UNAVAILABLE)
@@ -43,7 +61,11 @@ export class AuthExceptionFilter implements ExceptionFilter {
             : ((body as { message?: string }).message ?? 'Validation failed');
       return response.status(HttpStatus.BAD_REQUEST).json({ message });
     }
-    if (exception instanceof Error && exception.message === 'Invalid email') {
+    if (
+      exception instanceof Error &&
+      (exception.message === 'Invalid email' ||
+        exception.message === 'Name is required')
+    ) {
       return response
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: exception.message });
@@ -53,4 +75,12 @@ export class AuthExceptionFilter implements ExceptionFilter {
       exception instanceof Error ? exception.message : 'Internal server error';
     return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message });
   }
+}
+
+function isUniqueViolation(exception: unknown): boolean {
+  if (!(exception instanceof QueryFailedError)) {
+    return false;
+  }
+  const driverError = exception.driverError as { code?: string } | undefined;
+  return driverError?.code === '23505';
 }

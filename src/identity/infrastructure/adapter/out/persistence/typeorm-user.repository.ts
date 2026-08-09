@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { UserRepository } from '../../../../application/port/out/user.repository';
+import { EmailAlreadyInUseException } from '../../../../domain/exception/identity.exceptions';
 import { User } from '../../../../domain/model/user';
 import { UserOrmEntity } from './user.orm-entity';
 
@@ -15,8 +16,15 @@ export class TypeOrmUserRepository extends UserRepository {
   }
 
   async create(email: string, name: string): Promise<User> {
-    const saved = await this.users.save(this.users.create({ email, name }));
-    return this.toDomain(saved);
+    try {
+      const saved = await this.users.save(this.users.create({ email, name }));
+      return this.toDomain(saved);
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new EmailAlreadyInUseException(email);
+      }
+      throw error;
+    }
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -33,4 +41,12 @@ export class TypeOrmUserRepository extends UserRepository {
       updatedAt: row.updatedAt,
     };
   }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  if (!(error instanceof QueryFailedError)) {
+    return false;
+  }
+  const driverError = error.driverError as { code?: string } | undefined;
+  return driverError?.code === '23505';
 }

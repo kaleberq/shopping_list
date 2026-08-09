@@ -13,41 +13,23 @@ Workflow para endpoints em `src/identity` (adapter HTTP + use cases).
 - **NEVER** logar código em claro ou JWT completo.
 - **NEVER** retornar `codeHash` na resposta.
 - Auth é **passwordless** (sem senha em `users`).
-- Cadastro e login são o mesmo fluxo (`request-code` → `login`).
+- Cadastro (`/auth/register`) exige `name`; login (`/auth/login`) só e-mail+código.
 - Preservar status codes e shapes atuais salvo breaking change combinada.
 
 ## Contratos atuais
 
 | Method | Path | Status | In | Out |
 |--------|------|--------|----|-----|
-| POST | `/auth/request-code` | 202 | `{ email }` | `{ message }` |
+| POST | `/auth/request-code` | 202 | `{ email, purpose? }` | `{ message }` |
+| POST | `/auth/register` | 201 | `{ email, code, name }` | token |
 | POST | `/auth/login` | 200 | `{ email, code }` | token |
 
-Erros: 400 / 410 / 503 via `AuthExceptionFilter`.
-
-## Workflow
-
-1. Perguntar: novo endpoint ou alteração? Autenticado?
-2. Command/result em `application/dto/`
-3. Port in + use case impl em `application/`
-4. Port out se precisar de DB/mail/token
-5. HTTP DTO + rota thin em `infrastructure/adapter/in/web/`
-6. Bind no `identity.module.ts`
-7. Exceptions de domínio + filter
-8. Checklist
-
-## Checklist
-
-- [ ] DTO HTTP validado
-- [ ] Use case sem HTTP status
-- [ ] Controller só chama port/in
-- [ ] Filter cobre novas exceptions
-- [ ] Código fora da resposta
-- [ ] Flutter informado se contrato mudou
+Erros: 400 / 401 / 409 / 410 / 503 via `AuthExceptionFilter`.
 
 ## Notes
 
 - Email: trim + lower-case.
-- Código 6 dígitos.
-- `login` cria usuário se e-mail novo (nome derivado do e-mail) e emite JWT.
+- Código 6 dígitos; `name` obrigatório no register.
+- `purpose: "register"` no request-code → **409** se e-mail já existe.
+- `register` cria usuário; `login` exige usuário existente.
 - JWT `sub` = string de `users.id`.

@@ -1,4 +1,7 @@
-import { EmailAlreadyInUseException } from '../../domain/exception/identity.exceptions';
+import {
+  EmailAlreadyInUseException,
+  UserNotFoundException,
+} from '../../domain/exception/identity.exceptions';
 import { RequestAuthCodeUseCaseImpl } from './request-auth-code.use-case.impl';
 
 describe('RequestAuthCodeUseCaseImpl', () => {
@@ -36,7 +39,7 @@ describe('RequestAuthCodeUseCaseImpl', () => {
     );
   });
 
-  it('sends a code for login without checking existing user', async () => {
+  it('sends a code for login when user exists', async () => {
     users.findByEmail.mockResolvedValue({ id: '1', email: 'ada@example.com' });
 
     const result = await useCase.execute({
@@ -45,7 +48,7 @@ describe('RequestAuthCodeUseCaseImpl', () => {
     });
 
     expect(result).toEqual({ message: 'Verification code sent to your email' });
-    expect(users.findByEmail).not.toHaveBeenCalled();
+    expect(users.findByEmail).toHaveBeenCalledWith('ada@example.com');
     expect(verificationCodes.save).toHaveBeenCalledWith(
       expect.objectContaining({
         email: 'ada@example.com',
@@ -57,6 +60,14 @@ describe('RequestAuthCodeUseCaseImpl', () => {
       'ada@example.com',
       expect.stringMatching(/^\d{6}$/),
     );
+  });
+
+  it('rejects login when email is not registered', async () => {
+    await expect(
+      useCase.execute({ email: 'missing@example.com', purpose: 'login' }),
+    ).rejects.toBeInstanceOf(UserNotFoundException);
+    expect(verificationCodes.save).not.toHaveBeenCalled();
+    expect(verificationCodeSender.send).not.toHaveBeenCalled();
   });
 
   it('rejects register when email already exists', async () => {

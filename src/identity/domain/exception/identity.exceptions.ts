@@ -28,7 +28,7 @@ export class EmailAlreadyInUseException extends Error {
 
 export class UserNotFoundException extends Error {
   constructor() {
-    super('User not found. Please register first');
+    super('Email not found');
     this.name = 'UserNotFoundException';
   }
 }

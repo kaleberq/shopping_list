@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { randomInt } from 'crypto';
-import { EmailAlreadyInUseException } from '../../domain/exception/identity.exceptions';
+import {
+  EmailAlreadyInUseException,
+  UserNotFoundException,
+} from '../../domain/exception/identity.exceptions';
 import { MessageResult } from '../dto/message.result';
 import { RequestAuthCodeCommand } from '../dto/request-auth-code.command';
 import { RequestAuthCodeUseCase } from '../port/in/request-auth-code.use-case';
@@ -27,8 +30,13 @@ export class RequestAuthCodeUseCaseImpl extends RequestAuthCodeUseCase {
     const email = AuthInputValidator.normalizeEmail(command.email);
     AuthInputValidator.validateEmail(email);
 
-    if (command.purpose === 'register' && (await this.users.findByEmail(email))) {
-      throw new EmailAlreadyInUseException(email);
+    const existingUser = await this.users.findByEmail(email);
+    if (command.purpose === 'register') {
+      if (existingUser) {
+        throw new EmailAlreadyInUseException(email);
+      }
+    } else if (command.purpose === 'login' && !existingUser) {
+      throw new UserNotFoundException();
     }
 
     const plainCode = String(randomInt(0, 1_000_000)).padStart(6, '0');

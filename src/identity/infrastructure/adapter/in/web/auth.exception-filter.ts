@@ -41,10 +41,13 @@ export class AuthExceptionFilter implements ExceptionFilter {
         .status(HttpStatus.CONFLICT)
         .json({ message: 'Email already in use' });
     }
-    if (exception instanceof UserNotFoundException) {
+    if (
+      exception instanceof UserNotFoundException ||
+      (exception instanceof Error && exception.name === 'UserNotFoundException')
+    ) {
       return response
         .status(HttpStatus.UNAUTHORIZED)
-        .json({ message: exception.message });
+        .json({ message: 'Email not found' });
     }
     if (exception instanceof EmailDeliveryException) {
       return response

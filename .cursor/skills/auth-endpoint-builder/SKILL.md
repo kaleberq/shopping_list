@@ -31,5 +31,6 @@ Erros: 400 / 401 / 409 / 410 / 503 via `AuthExceptionFilter`.
 - Email: trim + lower-case.
 - Código 6 dígitos; `name` obrigatório no register.
 - `purpose: "register"` no request-code → **409** se e-mail já existe.
+- `purpose: "login"` no request-code → **401** se e-mail não existe.
 - `register` cria usuário; `login` exige usuário existente.
 - JWT `sub` = string de `users.id`.

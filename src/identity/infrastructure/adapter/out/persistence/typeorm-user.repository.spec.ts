@@ -6,14 +6,70 @@ describe('TypeOrmUserRepository', () => {
   const users = {
     create: jest.fn((value: unknown) => value),
     save: jest.fn(),
+    update: jest.fn(),
     findOne: jest.fn(),
+  };
+  const plans = {
+    findByCode: jest.fn(),
+    ensureDefaults: jest.fn(),
   };
 
   let repository: TypeOrmUserRepository;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    repository = new TypeOrmUserRepository(users as never);
+    plans.findByCode.mockResolvedValue({ id: '1', code: 'free', name: 'Free' });
+    repository = new TypeOrmUserRepository(users as never, plans as never);
+  });
+
+  it('assigns free plan on create', async () => {
+    users.save.mockResolvedValue({ id: '9', email: 'ada@example.com' });
+    users.findOne.mockResolvedValue({
+      id: '9',
+      email: 'ada@example.com',
+      name: 'Ada',
+      preferredCurrency: 'BRL',
+      planId: '1',
+      plan: { id: '1', code: 'free', name: 'Free' },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const user = await repository.create('ada@example.com', 'Ada', 'BRL');
+
+    expect(plans.findByCode).toHaveBeenCalledWith('free');
+    expect(users.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'ada@example.com',
+        planId: '1',
+      }),
+    );
+    expect(user.planCode).toBe('free');
+  });
+
+  it('returns updated plan after settings change', async () => {
+    users.update.mockResolvedValue({ affected: 1 });
+    users.findOne.mockResolvedValue({
+      id: '9',
+      email: 'ada@example.com',
+      name: 'Ada',
+      preferredCurrency: 'USD',
+      planId: '2',
+      plan: { id: '2', code: 'paid', name: 'Paid' },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    plans.findByCode.mockResolvedValue({ id: '2', code: 'paid', name: 'Paid' });
+
+    const user = await repository.updateSettings('9', 'USD', 'paid');
+
+    expect(users.update).toHaveBeenCalledWith('9', {
+      preferredCurrency: 'USD',
+      planId: '2',
+    });
+    expect(user.planCode).toBe('paid');
+    expect(user.planName).toBe('Paid');
+    expect(user.preferredCurrency).toBe('USD');
   });
 
   it('maps unique email constraint to EmailAlreadyInUseException', async () => {

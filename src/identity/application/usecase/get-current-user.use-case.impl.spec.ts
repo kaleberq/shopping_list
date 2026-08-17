@@ -22,6 +22,8 @@ describe('GetCurrentUserUseCaseImpl', () => {
       email: 'ada@example.com',
       name: 'Ada',
       preferredCurrency: 'BRL',
+      planCode: 'free',
+      planName: 'Free',
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -31,6 +33,7 @@ describe('GetCurrentUserUseCaseImpl', () => {
       email: 'ada@example.com',
       name: 'Ada',
       preferredCurrency: 'BRL',
+      plan: { code: 'free', name: 'Free' },
     });
   });
 

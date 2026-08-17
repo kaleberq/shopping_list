@@ -9,6 +9,7 @@ import { RegisterWithCodeUseCase } from '../application/port/in/register-with-co
 import { RequestAuthCodeUseCase } from '../application/port/in/request-auth-code.use-case';
 import { UpdateUserSettingsUseCase } from '../application/port/in/update-user-settings.use-case';
 import { EmailVerificationCodeRepository } from '../application/port/out/email-verification-code.repository';
+import { PlanRepository } from '../application/port/out/plan.repository';
 import { PasswordHasher } from '../application/port/out/password-hasher';
 import { RegistrationVerificationSettings } from '../application/port/out/registration-verification.settings';
 import { TokenIssuer } from '../application/port/out/token-issuer';
@@ -22,18 +23,25 @@ import { UpdateUserSettingsUseCaseImpl } from '../application/usecase/update-use
 import { AuthController } from './adapter/in/web/auth.controller';
 import { NodemailerVerificationCodeSender } from './adapter/out/email/nodemailer-verification-code.sender';
 import { EmailVerificationCodeOrmEntity } from './adapter/out/persistence/email-verification-code.orm-entity';
+import { PlanOrmEntity } from './adapter/out/persistence/plan.orm-entity';
 import { TypeOrmEmailVerificationCodeRepository } from './adapter/out/persistence/typeorm-email-verification-code.repository';
+import { TypeOrmPlanRepository } from './adapter/out/persistence/typeorm-plan.repository';
 import { TypeOrmUserRepository } from './adapter/out/persistence/typeorm-user.repository';
 import { UserOrmEntity } from './adapter/out/persistence/user.orm-entity';
 import { BcryptPasswordHasher } from './adapter/out/security/bcrypt-password-hasher';
 import { JwtAuthGuard } from './adapter/out/security/jwt-auth.guard';
 import { JwtStrategy } from './adapter/out/security/jwt.strategy';
 import { JwtTokenIssuer } from './adapter/out/security/jwt-token-issuer';
+import { PlanSeedService } from './config/plan-seed.service';
 import { RegistrationVerificationSettingsAdapter } from './config/registration-verification-settings.adapter';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserOrmEntity, EmailVerificationCodeOrmEntity]),
+    TypeOrmModule.forFeature([
+      UserOrmEntity,
+      PlanOrmEntity,
+      EmailVerificationCodeOrmEntity,
+    ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -48,6 +56,7 @@ import { RegistrationVerificationSettingsAdapter } from './config/registration-v
   ],
   controllers: [AuthController],
   providers: [
+    { provide: PlanRepository, useClass: TypeOrmPlanRepository },
     { provide: UserRepository, useClass: TypeOrmUserRepository },
     {
       provide: EmailVerificationCodeRepository,
@@ -85,6 +94,7 @@ import { RegistrationVerificationSettingsAdapter } from './config/registration-v
     },
     JwtStrategy,
     JwtAuthGuard,
+    PlanSeedService,
   ],
   exports: [JwtModule, PassportModule],
 })

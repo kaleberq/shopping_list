@@ -3,4 +3,8 @@ export type UserProfileResult = {
   email: string;
   name: string;
   preferredCurrency: string;
+  plan: {
+    code: string;
+    name: string;
+  };
 };

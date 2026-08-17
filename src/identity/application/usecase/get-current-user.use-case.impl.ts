@@ -24,11 +24,17 @@ function toProfile(user: {
   email: string;
   name: string;
   preferredCurrency: string;
+  planCode: string;
+  planName: string;
 }): UserProfileResult {
   return {
     id: user.id,
     email: user.email,
     name: user.name,
     preferredCurrency: user.preferredCurrency,
+    plan: {
+      code: user.planCode,
+      name: user.planName,
+    },
   };
 }

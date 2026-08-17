@@ -8,8 +8,9 @@ export abstract class UserRepository {
   ): Promise<User>;
   abstract findByEmail(email: string): Promise<User | null>;
   abstract findById(id: string): Promise<User | null>;
-  abstract updatePreferredCurrency(
+  abstract updateSettings(
     id: string,
     preferredCurrency: string,
+    planCode: string,
   ): Promise<User>;
 }

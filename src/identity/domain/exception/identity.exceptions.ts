@@ -33,6 +33,13 @@ export class InvalidPreferredCurrencyException extends Error {
   }
 }
 
+export class InvalidPlanCodeException extends Error {
+  constructor() {
+    super('Invalid plan code');
+    this.name = 'InvalidPlanCodeException';
+  }
+}
+
 export class UserNotFoundException extends Error {
   constructor() {
     super('Email not found');

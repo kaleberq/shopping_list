@@ -3,6 +3,9 @@ export type User = {
   email: string;
   name: string;
   preferredCurrency: string;
+  planId: string;
+  planCode: string;
+  planName: string;
   createdAt: Date;
   updatedAt: Date;
 };

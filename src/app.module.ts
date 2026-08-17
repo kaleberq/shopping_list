@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmailVerificationCodeOrmEntity } from './identity/infrastructure/adapter/out/persistence/email-verification-code.orm-entity';
+import { PlanOrmEntity } from './identity/infrastructure/adapter/out/persistence/plan.orm-entity';
 import { UserOrmEntity } from './identity/infrastructure/adapter/out/persistence/user.orm-entity';
 import { IdentityModule } from './identity/infrastructure/identity.module';
 import { ShoppingListItemOrmEntity } from './shoppinglist/infrastructure/adapter/out/persistence/shopping-list-item.orm-entity';
@@ -24,6 +25,7 @@ import { ShoppingListModule } from './shoppinglist/infrastructure/shoppinglist.m
         database: config.get<string>('DATABASE_NAME', 'shopping_list'),
         entities: [
           UserOrmEntity,
+          PlanOrmEntity,
           EmailVerificationCodeOrmEntity,
           ShoppingListItemOrmEntity,
         ],

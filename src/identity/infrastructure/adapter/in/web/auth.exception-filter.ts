@@ -10,10 +10,11 @@ import { QueryFailedError } from 'typeorm';
 import {
   EmailAlreadyInUseException,
   EmailDeliveryException,
+  InvalidPlanCodeException,
+  InvalidPreferredCurrencyException,
   InvalidVerificationCodeException,
   UserNotFoundException,
   VerificationCodeExpiredException,
-  InvalidPreferredCurrencyException,
 } from '../../../../domain/exception/identity.exceptions';
 
 @Catch()
@@ -83,6 +84,14 @@ export class AuthExceptionFilter implements ExceptionFilter {
       return response
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: 'Invalid preferred currency' });
+    }
+    if (
+      exception instanceof InvalidPlanCodeException ||
+      (exception instanceof Error && exception.message === 'Invalid plan code')
+    ) {
+      return response
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: 'Invalid plan code' });
     }
 
     const message =

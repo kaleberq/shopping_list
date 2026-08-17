@@ -1,8 +1,6 @@
-export type User = {
+export type UserProfileResult = {
   id: string;
   email: string;
   name: string;
   preferredCurrency: string;
-  createdAt: Date;
-  updatedAt: Date;
 };

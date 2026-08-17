@@ -1,10 +1,12 @@
 import {
   IsEmail,
+  IsIn,
   IsNotEmpty,
   IsString,
   Matches,
   MaxLength,
 } from 'class-validator';
+import { SUPPORTED_CURRENCIES } from '../../../../../domain/model/supported-currencies';
 
 export class RegisterWithCodeDto {
   @IsEmail()
@@ -19,4 +21,9 @@ export class RegisterWithCodeDto {
   @IsNotEmpty()
   @MaxLength(255)
   name!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsIn([...SUPPORTED_CURRENCIES])
+  preferredCurrency!: string;
 }

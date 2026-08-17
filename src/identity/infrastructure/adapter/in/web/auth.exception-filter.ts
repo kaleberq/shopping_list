@@ -13,6 +13,7 @@ import {
   InvalidVerificationCodeException,
   UserNotFoundException,
   VerificationCodeExpiredException,
+  InvalidPreferredCurrencyException,
 } from '../../../../domain/exception/identity.exceptions';
 
 @Catch()
@@ -67,11 +68,21 @@ export class AuthExceptionFilter implements ExceptionFilter {
     if (
       exception instanceof Error &&
       (exception.message === 'Invalid email' ||
-        exception.message === 'Name is required')
+        exception.message === 'Name is required' ||
+        exception.message === 'Preferred currency is required')
     ) {
       return response
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: exception.message });
+    }
+    if (
+      exception instanceof InvalidPreferredCurrencyException ||
+      (exception instanceof Error &&
+        exception.message === 'Invalid preferred currency')
+    ) {
+      return response
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: 'Invalid preferred currency' });
     }
 
     const message =

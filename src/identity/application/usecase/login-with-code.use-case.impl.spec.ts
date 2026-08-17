@@ -15,6 +15,8 @@ describe('LoginWithCodeUseCaseImpl', () => {
   const users = {
     create: jest.fn(),
     findByEmail: jest.fn(),
+    findById: jest.fn(),
+    updatePreferredCurrency: jest.fn(),
   };
   const passwordHasher = {
     hash: jest.fn(),
@@ -99,6 +101,8 @@ describe('RegisterWithCodeUseCaseImpl', () => {
   const users = {
     create: jest.fn(),
     findByEmail: jest.fn(),
+    findById: jest.fn(),
+    updatePreferredCurrency: jest.fn(),
   };
   const passwordHasher = {
     hash: jest.fn(),
@@ -139,9 +143,14 @@ describe('RegisterWithCodeUseCaseImpl', () => {
       email: 'ada@example.com',
       code: '123456',
       name: 'Ada Lovelace',
+      preferredCurrency: 'BRL',
     });
 
-    expect(users.create).toHaveBeenCalledWith('ada@example.com', 'Ada Lovelace');
+    expect(users.create).toHaveBeenCalledWith(
+      'ada@example.com',
+      'Ada Lovelace',
+      'BRL',
+    );
     expect(result.accessToken).toBe('token');
   });
 
@@ -153,6 +162,7 @@ describe('RegisterWithCodeUseCaseImpl', () => {
         email: 'ada@example.com',
         code: '123456',
         name: 'Ada',
+        preferredCurrency: 'BRL',
       }),
     ).rejects.toBeInstanceOf(EmailAlreadyInUseException);
     expect(verificationCodes.findValidByEmail).not.toHaveBeenCalled();

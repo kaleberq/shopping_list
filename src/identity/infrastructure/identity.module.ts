@@ -4,8 +4,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoginWithCodeUseCase } from '../application/port/in/login-with-code.use-case';
+import { GetCurrentUserUseCase } from '../application/port/in/get-current-user.use-case';
 import { RegisterWithCodeUseCase } from '../application/port/in/register-with-code.use-case';
 import { RequestAuthCodeUseCase } from '../application/port/in/request-auth-code.use-case';
+import { UpdateUserSettingsUseCase } from '../application/port/in/update-user-settings.use-case';
 import { EmailVerificationCodeRepository } from '../application/port/out/email-verification-code.repository';
 import { PasswordHasher } from '../application/port/out/password-hasher';
 import { RegistrationVerificationSettings } from '../application/port/out/registration-verification.settings';
@@ -13,8 +15,10 @@ import { TokenIssuer } from '../application/port/out/token-issuer';
 import { UserRepository } from '../application/port/out/user.repository';
 import { VerificationCodeSender } from '../application/port/out/verification-code-sender';
 import { LoginWithCodeUseCaseImpl } from '../application/usecase/login-with-code.use-case.impl';
+import { GetCurrentUserUseCaseImpl } from '../application/usecase/get-current-user.use-case.impl';
 import { RegisterWithCodeUseCaseImpl } from '../application/usecase/register-with-code.use-case.impl';
 import { RequestAuthCodeUseCaseImpl } from '../application/usecase/request-auth-code.use-case.impl';
+import { UpdateUserSettingsUseCaseImpl } from '../application/usecase/update-user-settings.use-case.impl';
 import { AuthController } from './adapter/in/web/auth.controller';
 import { NodemailerVerificationCodeSender } from './adapter/out/email/nodemailer-verification-code.sender';
 import { EmailVerificationCodeOrmEntity } from './adapter/out/persistence/email-verification-code.orm-entity';
@@ -22,6 +26,7 @@ import { TypeOrmEmailVerificationCodeRepository } from './adapter/out/persistenc
 import { TypeOrmUserRepository } from './adapter/out/persistence/typeorm-user.repository';
 import { UserOrmEntity } from './adapter/out/persistence/user.orm-entity';
 import { BcryptPasswordHasher } from './adapter/out/security/bcrypt-password-hasher';
+import { JwtAuthGuard } from './adapter/out/security/jwt-auth.guard';
 import { JwtStrategy } from './adapter/out/security/jwt.strategy';
 import { JwtTokenIssuer } from './adapter/out/security/jwt-token-issuer';
 import { RegistrationVerificationSettingsAdapter } from './config/registration-verification-settings.adapter';
@@ -70,7 +75,16 @@ import { RegistrationVerificationSettingsAdapter } from './config/registration-v
       provide: LoginWithCodeUseCase,
       useClass: LoginWithCodeUseCaseImpl,
     },
+    {
+      provide: GetCurrentUserUseCase,
+      useClass: GetCurrentUserUseCaseImpl,
+    },
+    {
+      provide: UpdateUserSettingsUseCase,
+      useClass: UpdateUserSettingsUseCaseImpl,
+    },
     JwtStrategy,
+    JwtAuthGuard,
   ],
   exports: [JwtModule, PassportModule],
 })

@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { EmailAlreadyInUseException } from '../../domain/exception/identity.exceptions';
+import {
+  EmailAlreadyInUseException,
+  InvalidPreferredCurrencyException,
+} from '../../domain/exception/identity.exceptions';
+import { isSupportedCurrency } from '../../domain/model/supported-currencies';
 import { AuthTokenResult } from '../dto/auth-token.result';
 import { RegisterWithCodeCommand } from '../dto/register-with-code.command';
 import { RegisterWithCodeUseCase } from '../port/in/register-with-code.use-case';
@@ -25,8 +29,15 @@ export class RegisterWithCodeUseCaseImpl extends RegisterWithCodeUseCase {
     const email = AuthInputValidator.normalizeEmail(command.email);
     const code = (command.code ?? '').trim();
     const name = (command.name ?? '').trim();
+    const preferredCurrency = AuthInputValidator.normalizeCurrency(
+      command.preferredCurrency,
+    );
     AuthInputValidator.validateEmail(email);
     AuthInputValidator.validateName(name);
+    AuthInputValidator.validatePreferredCurrency(preferredCurrency);
+    if (!isSupportedCurrency(preferredCurrency)) {
+      throw new InvalidPreferredCurrencyException();
+    }
 
     if (await this.users.findByEmail(email)) {
       throw new EmailAlreadyInUseException(email);
@@ -39,7 +50,7 @@ export class RegisterWithCodeUseCaseImpl extends RegisterWithCodeUseCase {
       code,
     );
 
-    const user = await this.users.create(email, name);
+    const user = await this.users.create(email, name, preferredCurrency);
     await this.verificationCodes.invalidateByEmail(email);
     return this.tokenIssuer.issue(user.id);
   }

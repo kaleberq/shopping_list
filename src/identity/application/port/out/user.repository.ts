@@ -1,6 +1,15 @@
 import { User } from '../../../domain/model/user';
 
 export abstract class UserRepository {
-  abstract create(email: string, name: string): Promise<User>;
+  abstract create(
+    email: string,
+    name: string,
+    preferredCurrency: string,
+  ): Promise<User>;
   abstract findByEmail(email: string): Promise<User | null>;
+  abstract findById(id: string): Promise<User | null>;
+  abstract updatePreferredCurrency(
+    id: string,
+    preferredCurrency: string,
+  ): Promise<User>;
 }

@@ -26,6 +26,13 @@ export class EmailAlreadyInUseException extends Error {
   }
 }
 
+export class InvalidPreferredCurrencyException extends Error {
+  constructor() {
+    super('Invalid preferred currency');
+    this.name = 'InvalidPreferredCurrencyException';
+  }
+}
+
 export class UserNotFoundException extends Error {
   constructor() {
     super('Email not found');

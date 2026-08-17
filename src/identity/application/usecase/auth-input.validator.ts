@@ -15,6 +15,21 @@ export class AuthInputValidator {
     }
   }
 
+  static validatePreferredCurrency(currency: string): void {
+    const normalized = (currency ?? '').trim().toUpperCase();
+    if (!normalized) {
+      throw new Error('Preferred currency is required');
+    }
+    // Lazy import avoided — keep validator independent; use case checks supported list
+    if (!/^[A-Z]{3}$/.test(normalized)) {
+      throw new Error('Invalid preferred currency');
+    }
+  }
+
+  static normalizeCurrency(currency: string): string {
+    return (currency ?? '').trim().toUpperCase();
+  }
+
   static defaultNameFromEmail(email: string): string {
     const local = email.split('@')[0]?.trim();
     return local && local.length > 0 ? local : email;

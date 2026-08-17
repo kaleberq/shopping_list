@@ -19,6 +19,9 @@ export class UserOrmEntity {
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 
+  @Column({ name: 'preferred_currency', type: 'varchar', length: 3, default: 'BRL' })
+  preferredCurrency!: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 

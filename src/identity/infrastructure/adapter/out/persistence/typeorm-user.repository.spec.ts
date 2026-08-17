@@ -25,7 +25,7 @@ describe('TypeOrmUserRepository', () => {
     );
 
     await expect(
-      repository.create('ada@example.com', 'Ada'),
+      repository.create('ada@example.com', 'Ada', 'BRL'),
     ).rejects.toBeInstanceOf(EmailAlreadyInUseException);
   });
 });

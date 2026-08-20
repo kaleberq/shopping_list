@@ -1,4 +1,4 @@
-import { PLAN_CODES } from '../../../../domain/model/plan-codes';
+import { DEFAULT_PLANS } from '../../../../domain/model/plan-id';
 import { TypeOrmPlanRepository } from './typeorm-plan.repository';
 
 describe('TypeOrmPlanRepository', () => {
@@ -15,20 +15,18 @@ describe('TypeOrmPlanRepository', () => {
     repository = new TypeOrmPlanRepository(plans as never);
   });
 
-  it('seeds default plans when missing', async () => {
+  it('seeds default plans by id when missing', async () => {
     plans.findOne.mockResolvedValue(null);
     plans.save.mockResolvedValue(undefined);
 
     await repository.ensureDefaults();
 
-    expect(plans.save).toHaveBeenCalledTimes(2);
-    expect(plans.create).toHaveBeenCalledWith({
-      code: PLAN_CODES.free,
-      name: 'Free',
-    });
-    expect(plans.create).toHaveBeenCalledWith({
-      code: PLAN_CODES.paid,
-      name: 'Paid',
-    });
+    expect(plans.save).toHaveBeenCalledTimes(DEFAULT_PLANS.length);
+    for (const plan of DEFAULT_PLANS) {
+      expect(plans.create).toHaveBeenCalledWith({
+        id: plan.id,
+        name: plan.name,
+      });
+    }
   });
 });

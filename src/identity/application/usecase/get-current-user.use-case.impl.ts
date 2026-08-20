@@ -24,7 +24,7 @@ function toProfile(user: {
   email: string;
   name: string;
   preferredCurrency: string;
-  planCode: string;
+  planId: string;
   planName: string;
 }): UserProfileResult {
   return {
@@ -33,7 +33,7 @@ function toProfile(user: {
     name: user.name,
     preferredCurrency: user.preferredCurrency,
     plan: {
-      code: user.planCode,
+      id: user.planId,
       name: user.planName,
     },
   };

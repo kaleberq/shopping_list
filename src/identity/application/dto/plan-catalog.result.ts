@@ -1,5 +1,5 @@
 export type PlanCatalogItem = {
-  code: string;
+  id: string;
   name: string;
 };
 

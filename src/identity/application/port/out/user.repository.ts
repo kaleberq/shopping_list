@@ -11,6 +11,6 @@ export abstract class UserRepository {
   abstract updateSettings(
     id: string,
     preferredCurrency: string,
-    planCode: string,
+    planId: string,
   ): Promise<User>;
 }

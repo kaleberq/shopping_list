@@ -1,6 +1,6 @@
 # Monetização: planos, AdMob e modos do app
 
-Documento de produto/técnico para alinhar **AdMob**, **planos** (`free` / `paid`) e a experiência **deslogada (guest)** no backend NestJS + app Flutter.
+Documento de produto/técnico para alinhar **AdMob**, **planos** (`free` / `premium`) e a experiência **deslogada (guest)** no backend NestJS + app Flutter.
 
 ---
 
@@ -10,24 +10,24 @@ Documento de produto/técnico para alinhar **AdMob**, **planos** (`free` / `paid
 |--------|-----|-------|----------------|
 | **Guest** (deslogado) | Sim | Não | Lista local / limitada, sem sync multi-device |
 | **Free** (logado) | Sim | Sim | Sync básico, features “lite” |
-| **Paid** | Não | Sim | Tudo + sem ads |
+| **Premium** | Não | Sim | Tudo + sem ads |
 
-O backend já expõe `planCode` no perfil. O Flutter deriva:
+O backend já expõe `plan.id` no perfil. O Flutter deriva:
 
 - `isGuest` → sem JWT / sem sessão
-- `plan.code` → `free` | `paid` (só quando logado)
-- `adsEnabled` → `true` em guest e free; `false` em paid
+- `plan.id` / `plan.name` → plano vigente (só quando logado)
+- `adsEnabled` → preferir `entitlements.ads` do backend (não hardcodar por nome)
 
 AdMob roda **só no client**. O backend decide **plano e entitlements**; o app decide **se mostra ads**.
 
 ---
 
-## Papel de `plans.code` vs `plans.name`
+## Papel de `plans.id` vs `plans.name`
 
 | Coluna | Uso |
 |--------|-----|
-| `code` | Identificador estável (`free`, `paid`): API, validação, regras, IAP |
-| `name` | Rótulo de UI (`Free`, `Paid` / i18n / marketing) — pode mudar sem quebrar contrato |
+| `id` | Identificador estável (`PlanId.Free = 1`, `PlanId.Premium = 2`); registro usa `PlanId.Free` |
+| `name` | Rótulo de UI apenas (`Free`, `Premium`) |
 
 ---
 
@@ -48,7 +48,7 @@ AdMob roda **só no client**. O backend decide **plano e entitlements**; o app d
 - Ads em momentos não críticos (abrir lista, após adicionar item — não no meio da digitação)
 - Upsell: “Remover ads + listas ilimitadas”
 
-### Paid (sem ads)
+### Premium (sem ads)
 
 - Listas/membros ilimitados (ou limites altos)
 - Zero banner / interstitial / rewarded
@@ -58,13 +58,13 @@ AdMob roda **só no client**. O backend decide **plano e entitlements**; o app d
 
 ## AdMob — onde colocar
 
-| Formato | Guest / Free | Paid |
+| Formato | Guest / Free | Premium |
 |---------|--------------|------|
 | **Banner** | Tela da lista (discreto) | Não |
 | **Interstitial** | Raro (sair da lista ou 1x a cada X min) | Não |
 | **Rewarded** | Opcional: “Assistir → desbloquear 1 lista extra por 24h” | Não |
 
-Paid: não carregar ads, ou carregar SDK com `adsEnabled = false`.
+Premium: não carregar ads, ou carregar SDK com `adsEnabled = false`.
 
 Não bloquear colaboração WebSocket por falha do AdMob.
 
@@ -80,7 +80,7 @@ Estender o perfil (`GET /auth/me`) com entitlements, para o Flutter **não hardc
   "email": "...",
   "name": "...",
   "preferredCurrency": "BRL",
-  "plan": { "code": "free", "name": "Free" },
+  "plan": { "id": "1", "name": "Free" },
   "entitlements": {
     "ads": true,
     "maxLists": 2,
@@ -95,11 +95,11 @@ Estender o perfil (`GET /auth/me`) com entitlements, para o Flutter **não hardc
 |-------|-------|------------------|------------------|
 | Guest | `true` (só no client) | 1 local | Não |
 | Free | `true` | 1–2 | Não |
-| Paid | `false` | ilimitado / alto | Sim |
+| Premium | `false` | ilimitado / alto | Sim |
 
 Guest: regras no client (ou endpoint público de limits); **sem** linha em `plans` e **sem** JWT.
 
-Fonte da verdade do plano após compra: **backend** (validação IAP/assinatura → `planCode = paid`), não só `SharedPreferences`.
+Fonte da verdade do plano após compra: **backend** (validação IAP/assinatura → `planId` do Premium), não só `SharedPreferences`.
 
 ---
 
@@ -108,10 +108,10 @@ Fonte da verdade do plano após compra: **backend** (validação IAP/assinatura 
 ```text
 Guest (+ ads)
   → criar conta → Free (+ ads, ganha sync)
-    → IAP / assinatura → Paid (sem ads, features full)
+    → IAP / assinatura → Premium (sem ads, features full)
 ```
 
-Soft paywall quando bater limite (ex.: “3ª lista = paid ou rewarded ad”).
+Soft paywall quando bater limite (ex.: “3ª lista = premium ou rewarded ad”).
 
 ---
 
@@ -120,22 +120,22 @@ Soft paywall quando bater limite (ex.: “3ª lista = paid ou rewarded ad”).
 - Consentimento de ads (UMP / ATT / LGPD) antes de personalizar anúncios
 - Ads não devem atrapalhar digitação nem o handshake WS
 - Guest “quase free” sem conta: evita abuso de sync no servidor
-- Documentar no Flutter: mapa `plan.code` → UI de ads e locks de feature
+- Documentar no Flutter: mapa `plan.id` / entitlements → UI de ads e locks de feature
 
 ---
 
 ## Próximos passos sugeridos
 
-1. Fechar tabela de entitlements (valores exatos free vs paid vs guest)
+1. Fechar tabela de entitlements (valores exatos free vs premium vs guest)
 2. Incluir `entitlements` em `UserProfileResult` / `GET /auth/me`
 3. No Flutter: gate único `adsEnabled` + checks de limite
-4. Integrar IAP e endpoint de confirmação de assinatura (atualizar `planCode`)
+4. Integrar IAP e endpoint de confirmação de assinatura (atualizar `planId`)
 5. (Opcional) rewarded ads só no free, com entitlement temporário
 
 ---
 
 ## Relação com o schema atual
 
-- Tabela `plans`: continua com `code` + `name`
+- Tabela `plans`: `id` + `name` (`Free`, `Premium`)
 - Usuário: `plan_id` → plano vigente
 - Guest: fora de `users` / `plans` até o registro

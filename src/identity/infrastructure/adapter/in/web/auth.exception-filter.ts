@@ -11,7 +11,7 @@ import {
   EmailDeliveryException,
   EmailNotFoundException,
   InvalidEmailException,
-  InvalidPlanCodeException,
+  InvalidPlanIdException,
   InvalidPreferredCurrencyException,
   InvalidVerificationCodeException,
   NameRequiredException,
@@ -71,7 +71,7 @@ export class AuthExceptionFilter implements ExceptionFilter {
       exception instanceof NameRequiredException ||
       exception instanceof PreferredCurrencyRequiredException ||
       exception instanceof InvalidPreferredCurrencyException ||
-      exception instanceof InvalidPlanCodeException
+      exception instanceof InvalidPlanIdException
     ) {
       return response
         .status(HttpStatus.BAD_REQUEST)

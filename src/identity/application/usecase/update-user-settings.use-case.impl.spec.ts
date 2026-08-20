@@ -1,5 +1,5 @@
 import {
-  InvalidPlanCodeException,
+  InvalidPlanIdException,
   InvalidPreferredCurrencyException,
   UserNotFoundException,
 } from '../../domain/exception/identity.exceptions';
@@ -26,7 +26,7 @@ describe('UpdateUserSettingsUseCaseImpl', () => {
       email: 'ada@example.com',
       name: 'Ada',
       preferredCurrency: 'BRL',
-      planCode: 'free',
+      planId: '1',
       planName: 'Free',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -36,8 +36,8 @@ describe('UpdateUserSettingsUseCaseImpl', () => {
       email: 'ada@example.com',
       name: 'Ada',
       preferredCurrency: 'USD',
-      planCode: 'paid',
-      planName: 'Paid',
+      planId: '2',
+      planName: 'Premium',
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -46,14 +46,14 @@ describe('UpdateUserSettingsUseCaseImpl', () => {
       useCase.execute({
         userId: '1',
         preferredCurrency: 'USD',
-        planCode: 'paid',
+        planId: '2',
       }),
     ).resolves.toEqual({
       id: '1',
       email: 'ada@example.com',
       name: 'Ada',
       preferredCurrency: 'USD',
-      plan: { code: 'paid', name: 'Paid' },
+      plan: { id: '2', name: 'Premium' },
     });
   });
 
@@ -62,19 +62,19 @@ describe('UpdateUserSettingsUseCaseImpl', () => {
       useCase.execute({
         userId: '1',
         preferredCurrency: 'XYZ',
-        planCode: 'free',
+        planId: '1',
       }),
     ).rejects.toBeInstanceOf(InvalidPreferredCurrencyException);
   });
 
-  it('rejects invalid plan code', async () => {
+  it('rejects empty plan id', async () => {
     await expect(
       useCase.execute({
         userId: '1',
         preferredCurrency: 'USD',
-        planCode: 'enterprise',
+        planId: '   ',
       }),
-    ).rejects.toBeInstanceOf(InvalidPlanCodeException);
+    ).rejects.toBeInstanceOf(InvalidPlanIdException);
   });
 
   it('rejects when user does not exist', async () => {
@@ -84,7 +84,7 @@ describe('UpdateUserSettingsUseCaseImpl', () => {
       useCase.execute({
         userId: '99',
         preferredCurrency: 'USD',
-        planCode: 'paid',
+        planId: '2',
       }),
     ).rejects.toBeInstanceOf(UserNotFoundException);
   });

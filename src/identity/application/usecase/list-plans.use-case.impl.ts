@@ -13,7 +13,7 @@ export class ListPlansUseCaseImpl extends ListPlansUseCase {
     const plans = await this.plans.findAll();
     return {
       plans: plans.map((plan) => ({
-        code: plan.code,
+        id: plan.id,
         name: plan.name,
       })),
     };

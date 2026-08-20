@@ -73,7 +73,7 @@ Movido para `identity/domain/model/email-verification-code.ts`. Port/out e adapt
 | `PasswordHasher` | Renomeado para `VerificationCodeHasher` / `BcryptVerificationCodeHasher` |
 | `PlanRepository.ensureDefaults` | Extraído para port `PlanDefaultsEnsurer` |
 | `UserNotFoundException` = "Email not found" | Separado: `EmailNotFoundException` (login/request-code) e `UserNotFoundException` (por id) |
-| Repo com `Error` genérico | `TypeOrmUserRepository` lança `InvalidPlanCodeException` / `UserNotFoundException` |
+| Repo com `Error` genérico | `TypeOrmUserRepository` lança `InvalidPlanIdException` / `UserNotFoundException` |
 
 ---
 

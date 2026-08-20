@@ -4,7 +4,7 @@ export type UserProfileResult = {
   name: string;
   preferredCurrency: string;
   plan: {
-    code: string;
+    id: string;
     name: string;
   };
 };

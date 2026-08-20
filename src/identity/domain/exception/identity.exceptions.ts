@@ -33,10 +33,10 @@ export class InvalidPreferredCurrencyException extends Error {
   }
 }
 
-export class InvalidPlanCodeException extends Error {
+export class InvalidPlanIdException extends Error {
   constructor() {
-    super('Invalid plan code');
-    this.name = 'InvalidPlanCodeException';
+    super('Invalid plan id');
+    this.name = 'InvalidPlanIdException';
   }
 }
 

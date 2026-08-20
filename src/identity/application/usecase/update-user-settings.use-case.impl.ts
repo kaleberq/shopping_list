@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import {
-  InvalidPlanCodeException,
+  InvalidPlanIdException,
   InvalidPreferredCurrencyException,
   UserNotFoundException,
 } from '../../domain/exception/identity.exceptions';
-import { isPlanCode } from '../../domain/model/plan-codes';
 import { isSupportedCurrency } from '../../domain/model/supported-currencies';
 import { UpdateUserSettingsCommand } from '../dto/update-user-settings.command';
 import { UserProfileResult } from '../dto/user-profile.result';
@@ -24,16 +23,13 @@ export class UpdateUserSettingsUseCaseImpl extends UpdateUserSettingsUseCase {
     const preferredCurrency = AuthInputValidator.normalizeCurrency(
       command.preferredCurrency,
     );
-    const planCode = (command.planCode ?? '').trim().toLowerCase();
+    const planId = (command.planId ?? '').trim();
     AuthInputValidator.validatePreferredCurrency(preferredCurrency);
     if (!isSupportedCurrency(preferredCurrency)) {
       throw new InvalidPreferredCurrencyException();
     }
-    if (!planCode) {
-      throw new InvalidPlanCodeException();
-    }
-    if (!isPlanCode(planCode)) {
-      throw new InvalidPlanCodeException();
+    if (!planId) {
+      throw new InvalidPlanIdException();
     }
 
     const existing = await this.users.findById(command.userId);
@@ -44,7 +40,7 @@ export class UpdateUserSettingsUseCaseImpl extends UpdateUserSettingsUseCase {
     const updated = await this.users.updateSettings(
       command.userId,
       preferredCurrency,
-      planCode,
+      planId,
     );
     return {
       id: updated.id,
@@ -52,7 +48,7 @@ export class UpdateUserSettingsUseCaseImpl extends UpdateUserSettingsUseCase {
       name: updated.name,
       preferredCurrency: updated.preferredCurrency,
       plan: {
-        code: updated.planCode,
+        id: updated.planId,
         name: updated.planName,
       },
     };

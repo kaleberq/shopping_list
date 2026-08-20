@@ -1,5 +1,6 @@
 import { QueryFailedError } from 'typeorm';
 import { EmailAlreadyInUseException } from '../../../../domain/exception/identity.exceptions';
+import { PlanId } from '../../../../domain/model/plan-id';
 import { TypeOrmUserRepository } from './typeorm-user.repository';
 
 describe('TypeOrmUserRepository', () => {
@@ -10,7 +11,7 @@ describe('TypeOrmUserRepository', () => {
     findOne: jest.fn(),
   };
   const plans = {
-    findByCode: jest.fn(),
+    findById: jest.fn(),
     findAll: jest.fn(),
   };
 
@@ -18,7 +19,10 @@ describe('TypeOrmUserRepository', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    plans.findByCode.mockResolvedValue({ id: '1', code: 'free', name: 'Free' });
+    plans.findById.mockResolvedValue({
+      id: '1',
+      name: 'Free',
+    });
     repository = new TypeOrmUserRepository(users as never, plans);
   });
 
@@ -30,21 +34,22 @@ describe('TypeOrmUserRepository', () => {
       name: 'Ada',
       preferredCurrency: 'BRL',
       planId: '1',
-      plan: { id: '1', code: 'free', name: 'Free' },
+      plan: { id: '1', name: 'Free' },
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
     const user = await repository.create('ada@example.com', 'Ada', 'BRL');
 
-    expect(plans.findByCode).toHaveBeenCalledWith('free');
+    expect(plans.findById).toHaveBeenCalledWith(PlanId.Free);
     expect(users.save).toHaveBeenCalledWith(
       expect.objectContaining({
         email: 'ada@example.com',
         planId: '1',
       }),
     );
-    expect(user.planCode).toBe('free');
+    expect(user.planId).toBe('1');
+    expect(user.planName).toBe('Free');
   });
 
   it('returns updated plan after settings change', async () => {
@@ -55,20 +60,23 @@ describe('TypeOrmUserRepository', () => {
       name: 'Ada',
       preferredCurrency: 'USD',
       planId: '2',
-      plan: { id: '2', code: 'paid', name: 'Paid' },
+      plan: { id: '2', name: 'Premium' },
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    plans.findByCode.mockResolvedValue({ id: '2', code: 'paid', name: 'Paid' });
+    plans.findById.mockResolvedValue({
+      id: '2',
+      name: 'Premium',
+    });
 
-    const user = await repository.updateSettings('9', 'USD', 'paid');
+    const user = await repository.updateSettings('9', 'USD', '2');
 
     expect(users.update).toHaveBeenCalledWith('9', {
       preferredCurrency: 'USD',
       planId: '2',
     });
-    expect(user.planCode).toBe('paid');
-    expect(user.planName).toBe('Paid');
+    expect(user.planId).toBe('2');
+    expect(user.planName).toBe('Premium');
     expect(user.preferredCurrency).toBe('USD');
   });
 

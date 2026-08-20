@@ -5,10 +5,10 @@ import { PlanRepository } from '../../../../application/port/out/plan.repository
 import { UserRepository } from '../../../../application/port/out/user.repository';
 import {
   EmailAlreadyInUseException,
-  InvalidPlanCodeException,
+  InvalidPlanIdException,
   UserNotFoundException,
 } from '../../../../domain/exception/identity.exceptions';
-import { PLAN_CODES } from '../../../../domain/model/plan-codes';
+import { PlanId } from '../../../../domain/model/plan-id';
 import { User } from '../../../../domain/model/user';
 import { UserOrmEntity } from './user.orm-entity';
 
@@ -27,9 +27,9 @@ export class TypeOrmUserRepository extends UserRepository {
     name: string,
     preferredCurrency: string,
   ): Promise<User> {
-    const freePlan = await this.plans.findByCode(PLAN_CODES.free);
+    const freePlan = await this.plans.findById(PlanId.Free);
     if (!freePlan) {
-      throw new InvalidPlanCodeException();
+      throw new InvalidPlanIdException();
     }
 
     try {
@@ -79,11 +79,11 @@ export class TypeOrmUserRepository extends UserRepository {
   async updateSettings(
     id: string,
     preferredCurrency: string,
-    planCode: string,
+    planId: string,
   ): Promise<User> {
-    const plan = await this.plans.findByCode(planCode);
+    const plan = await this.plans.findById(planId);
     if (!plan) {
-      throw new InvalidPlanCodeException();
+      throw new InvalidPlanIdException();
     }
 
     const result = await this.users.update(id, {
@@ -111,7 +111,6 @@ export class TypeOrmUserRepository extends UserRepository {
       name: row.name,
       preferredCurrency: row.preferredCurrency,
       planId: row.planId,
-      planCode: row.plan.code,
       planName: row.plan.name,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

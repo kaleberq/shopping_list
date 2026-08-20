@@ -85,7 +85,7 @@ export class AuthController {
     return this.updateUserSettingsUseCase.execute({
       userId: req.user.userId,
       preferredCurrency: dto.preferredCurrency,
-      planCode: dto.planCode,
+      planId: dto.planId,
     });
   }
 

@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { GetCurrentUserUseCase } from '../../../../application/port/in/get-current-user.use-case';
+import { ListPlansUseCase } from '../../../../application/port/in/list-plans.use-case';
 import { LoginWithCodeUseCase } from '../../../../application/port/in/login-with-code.use-case';
 import { RegisterWithCodeUseCase } from '../../../../application/port/in/register-with-code.use-case';
 import { RequestAuthCodeUseCase } from '../../../../application/port/in/request-auth-code.use-case';
@@ -37,6 +38,7 @@ export class AuthController {
     private readonly loginWithCodeUseCase: LoginWithCodeUseCase,
     private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
     private readonly updateUserSettingsUseCase: UpdateUserSettingsUseCase,
+    private readonly listPlansUseCase: ListPlansUseCase,
   ) {}
 
   @Post('request-code')
@@ -89,12 +91,7 @@ export class AuthController {
 
   @Get('plans')
   listPlans() {
-    return {
-      plans: [
-        { code: 'free', name: 'Free' },
-        { code: 'paid', name: 'Paid' },
-      ],
-    };
+    return this.listPlansUseCase.execute();
   }
 
   @Get('currencies')

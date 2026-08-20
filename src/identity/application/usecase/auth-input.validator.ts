@@ -1,3 +1,10 @@
+import {
+  InvalidEmailException,
+  InvalidPreferredCurrencyException,
+  NameRequiredException,
+  PreferredCurrencyRequiredException,
+} from '../../domain/exception/identity.exceptions';
+
 export class AuthInputValidator {
   static normalizeEmail(email: string): string {
     return (email ?? '').trim().toLowerCase();
@@ -5,24 +12,23 @@ export class AuthInputValidator {
 
   static validateEmail(email: string): void {
     if (!email || !email.includes('@')) {
-      throw new Error('Invalid email');
+      throw new InvalidEmailException();
     }
   }
 
   static validateName(name: string): void {
     if (!name?.trim()) {
-      throw new Error('Name is required');
+      throw new NameRequiredException();
     }
   }
 
   static validatePreferredCurrency(currency: string): void {
     const normalized = (currency ?? '').trim().toUpperCase();
     if (!normalized) {
-      throw new Error('Preferred currency is required');
+      throw new PreferredCurrencyRequiredException();
     }
-    // Lazy import avoided — keep validator independent; use case checks supported list
     if (!/^[A-Z]{3}$/.test(normalized)) {
-      throw new Error('Invalid preferred currency');
+      throw new InvalidPreferredCurrencyException();
     }
   }
 

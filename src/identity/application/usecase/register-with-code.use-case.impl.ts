@@ -8,9 +8,9 @@ import { AuthTokenResult } from '../dto/auth-token.result';
 import { RegisterWithCodeCommand } from '../dto/register-with-code.command';
 import { RegisterWithCodeUseCase } from '../port/in/register-with-code.use-case';
 import { EmailVerificationCodeRepository } from '../port/out/email-verification-code.repository';
-import { PasswordHasher } from '../port/out/password-hasher';
 import { TokenIssuer } from '../port/out/token-issuer';
 import { UserRepository } from '../port/out/user.repository';
+import { VerificationCodeHasher } from '../port/out/verification-code-hasher';
 import { assertValidVerificationCode } from './assert-valid-verification-code';
 import { AuthInputValidator } from './auth-input.validator';
 
@@ -19,7 +19,7 @@ export class RegisterWithCodeUseCaseImpl extends RegisterWithCodeUseCase {
   constructor(
     private readonly verificationCodes: EmailVerificationCodeRepository,
     private readonly users: UserRepository,
-    private readonly passwordHasher: PasswordHasher,
+    private readonly codeHasher: VerificationCodeHasher,
     private readonly tokenIssuer: TokenIssuer,
   ) {
     super();
@@ -40,12 +40,12 @@ export class RegisterWithCodeUseCaseImpl extends RegisterWithCodeUseCase {
     }
 
     if (await this.users.findByEmail(email)) {
-      throw new EmailAlreadyInUseException(email);
+      throw new EmailAlreadyInUseException();
     }
 
     await assertValidVerificationCode(
       this.verificationCodes,
-      this.passwordHasher,
+      this.codeHasher,
       email,
       code,
     );

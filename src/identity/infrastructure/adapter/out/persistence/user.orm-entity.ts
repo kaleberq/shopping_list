@@ -22,7 +22,12 @@ export class UserOrmEntity {
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 
-  @Column({ name: 'preferred_currency', type: 'varchar', length: 3, default: 'BRL' })
+  @Column({
+    name: 'preferred_currency',
+    type: 'varchar',
+    length: 3,
+    default: 'BRL',
+  })
   preferredCurrency!: string;
 
   @Column({ name: 'plan_id', type: 'bigint' })

@@ -1,6 +1,7 @@
 import {
   EmailAlreadyInUseException,
-  UserNotFoundException,
+  EmailNotFoundException,
+  InvalidEmailException,
 } from '../../domain/exception/identity.exceptions';
 import { RequestAuthCodeUseCaseImpl } from './request-auth-code.use-case.impl';
 
@@ -14,7 +15,7 @@ describe('RequestAuthCodeUseCaseImpl', () => {
     create: jest.fn(),
     findByEmail: jest.fn(),
   };
-  const passwordHasher = {
+  const codeHasher = {
     hash: jest.fn().mockResolvedValue('hashed-code'),
     matches: jest.fn(),
   };
@@ -31,11 +32,11 @@ describe('RequestAuthCodeUseCaseImpl', () => {
     jest.clearAllMocks();
     users.findByEmail.mockResolvedValue(null);
     useCase = new RequestAuthCodeUseCaseImpl(
-      verificationCodes as never,
+      verificationCodes,
       users as never,
-      passwordHasher as never,
-      verificationCodeSender as never,
-      settings as never,
+      codeHasher,
+      verificationCodeSender,
+      settings,
     );
   });
 
@@ -65,7 +66,7 @@ describe('RequestAuthCodeUseCaseImpl', () => {
   it('rejects login when email is not registered', async () => {
     await expect(
       useCase.execute({ email: 'missing@example.com', purpose: 'login' }),
-    ).rejects.toBeInstanceOf(UserNotFoundException);
+    ).rejects.toBeInstanceOf(EmailNotFoundException);
     expect(verificationCodes.save).not.toHaveBeenCalled();
     expect(verificationCodeSender.send).not.toHaveBeenCalled();
   });
@@ -91,8 +92,8 @@ describe('RequestAuthCodeUseCaseImpl', () => {
   });
 
   it('rejects invalid email', async () => {
-    await expect(useCase.execute({ email: 'not-an-email' })).rejects.toThrow(
-      'Invalid email',
-    );
+    await expect(
+      useCase.execute({ email: 'not-an-email' }),
+    ).rejects.toBeInstanceOf(InvalidEmailException);
   });
 });

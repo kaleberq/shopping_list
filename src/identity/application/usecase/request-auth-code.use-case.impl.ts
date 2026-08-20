@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { randomInt } from 'crypto';
 import {
   EmailAlreadyInUseException,
-  UserNotFoundException,
+  EmailNotFoundException,
 } from '../../domain/exception/identity.exceptions';
 import { MessageResult } from '../dto/message.result';
 import { RequestAuthCodeCommand } from '../dto/request-auth-code.command';
 import { RequestAuthCodeUseCase } from '../port/in/request-auth-code.use-case';
 import { EmailVerificationCodeRepository } from '../port/out/email-verification-code.repository';
-import { PasswordHasher } from '../port/out/password-hasher';
 import { RegistrationVerificationSettings } from '../port/out/registration-verification.settings';
 import { UserRepository } from '../port/out/user.repository';
+import { VerificationCodeHasher } from '../port/out/verification-code-hasher';
 import { VerificationCodeSender } from '../port/out/verification-code-sender';
 import { AuthInputValidator } from './auth-input.validator';
 
@@ -19,7 +19,7 @@ export class RequestAuthCodeUseCaseImpl extends RequestAuthCodeUseCase {
   constructor(
     private readonly verificationCodes: EmailVerificationCodeRepository,
     private readonly users: UserRepository,
-    private readonly passwordHasher: PasswordHasher,
+    private readonly codeHasher: VerificationCodeHasher,
     private readonly verificationCodeSender: VerificationCodeSender,
     private readonly settings: RegistrationVerificationSettings,
   ) {
@@ -33,10 +33,10 @@ export class RequestAuthCodeUseCaseImpl extends RequestAuthCodeUseCase {
     const existingUser = await this.users.findByEmail(email);
     if (command.purpose === 'register') {
       if (existingUser) {
-        throw new EmailAlreadyInUseException(email);
+        throw new EmailAlreadyInUseException();
       }
     } else if (command.purpose === 'login' && !existingUser) {
-      throw new UserNotFoundException();
+      throw new EmailNotFoundException();
     }
 
     const plainCode = String(randomInt(0, 1_000_000)).padStart(6, '0');
@@ -48,7 +48,7 @@ export class RequestAuthCodeUseCaseImpl extends RequestAuthCodeUseCase {
 
     await this.verificationCodes.save({
       email,
-      codeHash: await this.passwordHasher.hash(plainCode),
+      codeHash: await this.codeHasher.hash(plainCode),
       expiresAt,
       isValid: true,
     });

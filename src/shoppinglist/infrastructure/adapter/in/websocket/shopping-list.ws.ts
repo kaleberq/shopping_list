@@ -5,8 +5,10 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
-import { IncomingMessage } from 'http';
-import { WebSocket, WebSocketServer } from 'ws';
+import { JwtService } from '@nestjs/jwt';
+import { IncomingMessage, Server } from 'http';
+import { RawData, WebSocket, WebSocketServer } from 'ws';
+import { EmptyItemDescriptionException } from '../../../../domain/exception/shopping-list.exceptions';
 import { ShoppingListItem } from '../../../../domain/model/shopping-list-item';
 import { AddListItemUseCase } from '../../../../application/port/in/add-list-item.use-case';
 import { GetListItemsUseCase } from '../../../../application/port/in/get-list-items.use-case';
@@ -26,13 +28,24 @@ export class ShoppingListWsServer implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
+    private readonly jwtService: JwtService,
     private readonly addListItem: AddListItemUseCase,
     private readonly getListItems: GetListItemsUseCase,
   ) {}
 
   onModuleInit() {
-    const server = this.httpAdapterHost.httpAdapter.getHttpServer();
-    this.wss = new WebSocketServer({ server, path: '/ws/list' });
+    const server = this.httpAdapterHost.httpAdapter.getHttpServer() as Server;
+    this.wss = new WebSocketServer({
+      server,
+      path: '/ws/list',
+      verifyClient: (info, done) => {
+        void this.verifyClient(info.req)
+          .then((ok) =>
+            done(ok, ok ? 200 : 401, ok ? undefined : 'Unauthorized'),
+          )
+          .catch(() => done(false, 401, 'Unauthorized'));
+      },
+    });
     this.wss.on('connection', (socket, request) =>
       this.handleConnection(socket, request),
     );
@@ -41,6 +54,30 @@ export class ShoppingListWsServer implements OnModuleInit, OnModuleDestroy {
 
   onModuleDestroy() {
     this.wss?.close();
+  }
+
+  private async verifyClient(request: IncomingMessage): Promise<boolean> {
+    const token = this.extractBearerToken(request);
+    if (!token) {
+      return false;
+    }
+    try {
+      const payload = await this.jwtService.verifyAsync<{ sub?: string }>(
+        token,
+      );
+      return Boolean(payload.sub);
+    } catch {
+      return false;
+    }
+  }
+
+  private extractBearerToken(request: IncomingMessage): string | null {
+    const header = request.headers.authorization;
+    if (!header?.startsWith('Bearer ')) {
+      return null;
+    }
+    const token = header.slice('Bearer '.length).trim();
+    return token || null;
   }
 
   private handleConnection(socket: WebSocket, request: IncomingMessage) {
@@ -59,8 +96,8 @@ export class ShoppingListWsServer implements OnModuleInit, OnModuleDestroy {
       this.sendListUpdated(socket, listId, items);
     });
 
-    socket.on('message', (raw) => {
-      void this.handleMessage(socket, raw.toString());
+    socket.on('message', (raw: RawData) => {
+      void this.handleMessage(socket, this.rawToString(raw));
     });
 
     socket.on('close', () => {
@@ -85,14 +122,23 @@ export class ShoppingListWsServer implements OnModuleInit, OnModuleDestroy {
     const eventType = (root.type ?? '').trim();
     if (eventType === 'ITEM_ADDED') {
       const payload = root.payload ?? {};
-      const items = await this.addListItem.execute({
-        listId,
-        itemId: this.stringValue(payload.itemId),
-        description: this.stringValue(payload.description),
-        price: this.doubleValue(payload.price),
-        expiry: this.stringValue(payload.expiry),
-      });
-      this.broadcastListUpdated(listId, items);
+      try {
+        const items = await this.addListItem.execute({
+          listId,
+          itemId: this.stringValue(payload.itemId),
+          description: this.stringValue(payload.description),
+          price: this.doubleValue(payload.price),
+          expiry: this.stringValue(payload.expiry),
+        });
+        this.broadcastListUpdated(listId, items);
+      } catch (error) {
+        if (error instanceof EmptyItemDescriptionException) {
+          return;
+        }
+        this.logger.warn(
+          `ITEM_ADDED failed: ${error instanceof Error ? error.message : error}`,
+        );
+      }
       return;
     }
 
@@ -165,11 +211,30 @@ export class ShoppingListWsServer implements OnModuleInit, OnModuleDestroy {
     return listId?.trim() ? listId.trim() : null;
   }
 
+  private rawToString(raw: RawData): string {
+    if (typeof raw === 'string') {
+      return raw;
+    }
+    if (Buffer.isBuffer(raw)) {
+      return raw.toString('utf8');
+    }
+    if (Array.isArray(raw)) {
+      return Buffer.concat(raw).toString('utf8');
+    }
+    return Buffer.from(raw).toString('utf8');
+  }
+
   private stringValue(value: unknown): string | null {
     if (value === undefined || value === null) {
       return null;
     }
-    return String(value).trim();
+    if (typeof value === 'string') {
+      return value.trim();
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+    return null;
   }
 
   private doubleValue(value: unknown): number | null {

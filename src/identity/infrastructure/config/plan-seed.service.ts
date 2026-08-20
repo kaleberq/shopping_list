@@ -1,11 +1,11 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PlanRepository } from '../../application/port/out/plan.repository';
+import { PlanDefaultsEnsurer } from '../../application/port/out/plan-defaults-ensurer';
 
 @Injectable()
 export class PlanSeedService implements OnModuleInit {
-  constructor(private readonly plans: PlanRepository) {}
+  constructor(private readonly planDefaults: PlanDefaultsEnsurer) {}
 
   async onModuleInit(): Promise<void> {
-    await this.plans.ensureDefaults();
+    await this.planDefaults.ensureDefaults();
   }
 }

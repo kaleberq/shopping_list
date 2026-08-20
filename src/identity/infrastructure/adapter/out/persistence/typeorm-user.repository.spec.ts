@@ -11,7 +11,7 @@ describe('TypeOrmUserRepository', () => {
   };
   const plans = {
     findByCode: jest.fn(),
-    ensureDefaults: jest.fn(),
+    findAll: jest.fn(),
   };
 
   let repository: TypeOrmUserRepository;
@@ -19,7 +19,7 @@ describe('TypeOrmUserRepository', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     plans.findByCode.mockResolvedValue({ id: '1', code: 'free', name: 'Free' });
-    repository = new TypeOrmUserRepository(users as never, plans as never);
+    repository = new TypeOrmUserRepository(users as never, plans);
   });
 
   it('assigns free plan on create', async () => {

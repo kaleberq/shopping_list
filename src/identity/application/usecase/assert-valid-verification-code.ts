@@ -3,11 +3,11 @@ import {
   VerificationCodeExpiredException,
 } from '../../domain/exception/identity.exceptions';
 import { EmailVerificationCodeRepository } from '../port/out/email-verification-code.repository';
-import { PasswordHasher } from '../port/out/password-hasher';
+import { VerificationCodeHasher } from '../port/out/verification-code-hasher';
 
 export async function assertValidVerificationCode(
   verificationCodes: EmailVerificationCodeRepository,
-  passwordHasher: PasswordHasher,
+  codeHasher: VerificationCodeHasher,
   email: string,
   code: string,
 ): Promise<void> {
@@ -25,7 +25,7 @@ export async function assertValidVerificationCode(
     throw new VerificationCodeExpiredException();
   }
 
-  if (!(await passwordHasher.matches(code, verification.codeHash))) {
+  if (!(await codeHasher.matches(code, verification.codeHash))) {
     throw new InvalidVerificationCodeException();
   }
 }

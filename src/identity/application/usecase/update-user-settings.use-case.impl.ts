@@ -18,7 +18,9 @@ export class UpdateUserSettingsUseCaseImpl extends UpdateUserSettingsUseCase {
     super();
   }
 
-  async execute(command: UpdateUserSettingsCommand): Promise<UserProfileResult> {
+  async execute(
+    command: UpdateUserSettingsCommand,
+  ): Promise<UserProfileResult> {
     const preferredCurrency = AuthInputValidator.normalizeCurrency(
       command.preferredCurrency,
     );

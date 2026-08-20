@@ -11,12 +11,13 @@ Eventos em tempo real via **WebSocket nativo** (`ws`) no adapter `ShoppingListWs
 
 - **NEVER** trocar para Socket.IO sem pedido explícito.
 - **NEVER** colocar regra/TypeORM no handler WS — chamar use cases (`port/in`).
-- **NEVER** exigir JWT no WS sem o usuário pedir.
+- Handshake exige `Authorization: Bearer <accessToken>` (JWT válido).
 - Chaves JSON e `type` em **inglês**.
 
 ## Contrato atual
 
 - URL: `ws://host/ws/list?listId=<string>`
+- Auth: header `Authorization: Bearer <accessToken>` no handshake
 - Connect → `LIST_UPDATED` com `payload.items`
 - In: `ITEM_ADDED` + `{ description, price?, expiry?, itemId? }`
 - Out: broadcast `LIST_UPDATED` na sala `listId`
@@ -55,5 +56,5 @@ if (eventType === 'ITEM_REMOVED') {
 ## Teste manual
 
 ```bash
-npx wscat -c "ws://localhost:8080/ws/list?listId=demo"
+npx wscat -c "ws://localhost:8080/ws/list?listId=demo" -H "Authorization: Bearer <accessToken>"
 ```

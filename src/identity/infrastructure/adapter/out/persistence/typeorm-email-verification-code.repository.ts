@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EmailVerificationCode } from '../../../../application/dto/email-verification-code';
 import { EmailVerificationCodeRepository } from '../../../../application/port/out/email-verification-code.repository';
+import { EmailVerificationCode } from '../../../../domain/model/email-verification-code';
 import { EmailVerificationCodeOrmEntity } from './email-verification-code.orm-entity';
 
 @Injectable()

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { PasswordHasher } from '../../../../application/port/out/password-hasher';
+import { VerificationCodeHasher } from '../../../../application/port/out/verification-code-hasher';
 
 @Injectable()
-export class BcryptPasswordHasher extends PasswordHasher {
+export class BcryptVerificationCodeHasher extends VerificationCodeHasher {
   hash(plain: string): Promise<string> {
     return bcrypt.hash(plain, 10);
   }

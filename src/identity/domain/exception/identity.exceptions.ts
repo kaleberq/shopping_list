@@ -20,7 +20,7 @@ export class EmailDeliveryException extends Error {
 }
 
 export class EmailAlreadyInUseException extends Error {
-  constructor(_email?: string) {
+  constructor() {
     super('Email already in use');
     this.name = 'EmailAlreadyInUseException';
   }
@@ -40,9 +40,37 @@ export class InvalidPlanCodeException extends Error {
   }
 }
 
-export class UserNotFoundException extends Error {
+export class EmailNotFoundException extends Error {
   constructor() {
     super('Email not found');
+    this.name = 'EmailNotFoundException';
+  }
+}
+
+export class UserNotFoundException extends Error {
+  constructor() {
+    super('User not found');
     this.name = 'UserNotFoundException';
+  }
+}
+
+export class InvalidEmailException extends Error {
+  constructor() {
+    super('Invalid email');
+    this.name = 'InvalidEmailException';
+  }
+}
+
+export class NameRequiredException extends Error {
+  constructor() {
+    super('Name is required');
+    this.name = 'NameRequiredException';
+  }
+}
+
+export class PreferredCurrencyRequiredException extends Error {
+  constructor() {
+    super('Preferred currency is required');
+    this.name = 'PreferredCurrencyRequiredException';
   }
 }

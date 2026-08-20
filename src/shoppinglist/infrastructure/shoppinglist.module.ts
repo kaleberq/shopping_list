@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { IdentityModule } from '../../identity/infrastructure/identity.module';
 import { AddListItemUseCase } from '../application/port/in/add-list-item.use-case';
 import { GetListItemsUseCase } from '../application/port/in/get-list-items.use-case';
 import { ShoppingListRepository } from '../application/port/out/shopping-list.repository';
@@ -10,7 +11,10 @@ import { ShoppingListItemOrmEntity } from './adapter/out/persistence/shopping-li
 import { TypeOrmShoppingListRepository } from './adapter/out/persistence/typeorm-shopping-list.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ShoppingListItemOrmEntity])],
+  imports: [
+    IdentityModule,
+    TypeOrmModule.forFeature([ShoppingListItemOrmEntity]),
+  ],
   providers: [
     {
       provide: ShoppingListRepository,

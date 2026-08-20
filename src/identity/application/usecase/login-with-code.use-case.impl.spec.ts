@@ -1,7 +1,7 @@
 import {
   EmailAlreadyInUseException,
+  EmailNotFoundException,
   InvalidVerificationCodeException,
-  UserNotFoundException,
 } from '../../domain/exception/identity.exceptions';
 import { LoginWithCodeUseCaseImpl } from './login-with-code.use-case.impl';
 import { RegisterWithCodeUseCaseImpl } from './register-with-code.use-case.impl';
@@ -18,7 +18,7 @@ describe('LoginWithCodeUseCaseImpl', () => {
     findById: jest.fn(),
     updatePreferredCurrency: jest.fn(),
   };
-  const passwordHasher = {
+  const codeHasher = {
     hash: jest.fn(),
     matches: jest.fn(),
   };
@@ -35,10 +35,10 @@ describe('LoginWithCodeUseCaseImpl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useCase = new LoginWithCodeUseCaseImpl(
-      verificationCodes as never,
+      verificationCodes,
       users as never,
-      passwordHasher as never,
-      tokenIssuer as never,
+      codeHasher,
+      tokenIssuer,
     );
   });
 
@@ -49,7 +49,7 @@ describe('LoginWithCodeUseCaseImpl', () => {
       expiresAt: new Date(Date.now() + 60_000),
       isValid: true,
     });
-    passwordHasher.matches.mockResolvedValue(true);
+    codeHasher.matches.mockResolvedValue(true);
     users.findByEmail.mockResolvedValue({ id: '9', email: 'ada@example.com' });
 
     const result = await useCase.execute({
@@ -69,12 +69,12 @@ describe('LoginWithCodeUseCaseImpl', () => {
       expiresAt: new Date(Date.now() + 60_000),
       isValid: true,
     });
-    passwordHasher.matches.mockResolvedValue(true);
+    codeHasher.matches.mockResolvedValue(true);
     users.findByEmail.mockResolvedValue(null);
 
     await expect(
       useCase.execute({ email: 'ada@example.com', code: '123456' }),
-    ).rejects.toBeInstanceOf(UserNotFoundException);
+    ).rejects.toBeInstanceOf(EmailNotFoundException);
   });
 
   it('rejects invalid code', async () => {
@@ -84,7 +84,7 @@ describe('LoginWithCodeUseCaseImpl', () => {
       expiresAt: new Date(Date.now() + 60_000),
       isValid: true,
     });
-    passwordHasher.matches.mockResolvedValue(false);
+    codeHasher.matches.mockResolvedValue(false);
 
     await expect(
       useCase.execute({ email: 'ada@example.com', code: '000000' }),
@@ -104,7 +104,7 @@ describe('RegisterWithCodeUseCaseImpl', () => {
     findById: jest.fn(),
     updatePreferredCurrency: jest.fn(),
   };
-  const passwordHasher = {
+  const codeHasher = {
     hash: jest.fn(),
     matches: jest.fn(),
   };
@@ -121,10 +121,10 @@ describe('RegisterWithCodeUseCaseImpl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useCase = new RegisterWithCodeUseCaseImpl(
-      verificationCodes as never,
+      verificationCodes,
       users as never,
-      passwordHasher as never,
-      tokenIssuer as never,
+      codeHasher,
+      tokenIssuer,
     );
   });
 
@@ -135,7 +135,7 @@ describe('RegisterWithCodeUseCaseImpl', () => {
       expiresAt: new Date(Date.now() + 60_000),
       isValid: true,
     });
-    passwordHasher.matches.mockResolvedValue(true);
+    codeHasher.matches.mockResolvedValue(true);
     users.findByEmail.mockResolvedValue(null);
     users.create.mockResolvedValue({ id: '1', email: 'ada@example.com' });
 

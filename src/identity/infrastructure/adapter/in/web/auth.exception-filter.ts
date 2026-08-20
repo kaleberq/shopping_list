@@ -6,13 +6,16 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { QueryFailedError } from 'typeorm';
 import {
   EmailAlreadyInUseException,
   EmailDeliveryException,
+  EmailNotFoundException,
+  InvalidEmailException,
   InvalidPlanCodeException,
   InvalidPreferredCurrencyException,
   InvalidVerificationCodeException,
+  NameRequiredException,
+  PreferredCurrencyRequiredException,
   UserNotFoundException,
   VerificationCodeExpiredException,
 } from '../../../../domain/exception/identity.exceptions';
@@ -33,23 +36,20 @@ export class AuthExceptionFilter implements ExceptionFilter {
         .status(HttpStatus.GONE)
         .json({ message: exception.message });
     }
-    if (
-      exception instanceof EmailAlreadyInUseException ||
-      (exception instanceof Error &&
-        exception.name === 'EmailAlreadyInUseException') ||
-      isUniqueViolation(exception)
-    ) {
+    if (exception instanceof EmailAlreadyInUseException) {
       return response
         .status(HttpStatus.CONFLICT)
-        .json({ message: 'Email already in use' });
+        .json({ message: exception.message });
     }
-    if (
-      exception instanceof UserNotFoundException ||
-      (exception instanceof Error && exception.name === 'UserNotFoundException')
-    ) {
+    if (exception instanceof EmailNotFoundException) {
       return response
         .status(HttpStatus.UNAUTHORIZED)
-        .json({ message: 'Email not found' });
+        .json({ message: exception.message });
+    }
+    if (exception instanceof UserNotFoundException) {
+      return response
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ message: exception.message });
     }
     if (exception instanceof EmailDeliveryException) {
       return response
@@ -67,43 +67,19 @@ export class AuthExceptionFilter implements ExceptionFilter {
       return response.status(HttpStatus.BAD_REQUEST).json({ message });
     }
     if (
-      exception instanceof Error &&
-      (exception.message === 'Invalid email' ||
-        exception.message === 'Name is required' ||
-        exception.message === 'Preferred currency is required')
+      exception instanceof InvalidEmailException ||
+      exception instanceof NameRequiredException ||
+      exception instanceof PreferredCurrencyRequiredException ||
+      exception instanceof InvalidPreferredCurrencyException ||
+      exception instanceof InvalidPlanCodeException
     ) {
       return response
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: exception.message });
-    }
-    if (
-      exception instanceof InvalidPreferredCurrencyException ||
-      (exception instanceof Error &&
-        exception.message === 'Invalid preferred currency')
-    ) {
-      return response
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ message: 'Invalid preferred currency' });
-    }
-    if (
-      exception instanceof InvalidPlanCodeException ||
-      (exception instanceof Error && exception.message === 'Invalid plan code')
-    ) {
-      return response
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ message: 'Invalid plan code' });
     }
 
     const message =
       exception instanceof Error ? exception.message : 'Internal server error';
     return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message });
   }
-}
-
-function isUniqueViolation(exception: unknown): boolean {
-  if (!(exception instanceof QueryFailedError)) {
-    return false;
-  }
-  const driverError = exception.driverError as { code?: string } | undefined;
-  return driverError?.code === '23505';
 }

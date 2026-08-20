@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PlanDefaultsEnsurer } from '../../../../application/port/out/plan-defaults-ensurer';
 import { PlanRepository } from '../../../../application/port/out/plan.repository';
 import { PLAN_CODES } from '../../../../domain/model/plan-codes';
 import { Plan } from '../../../../domain/model/plan';
 import { PlanOrmEntity } from './plan.orm-entity';
 
 @Injectable()
-export class TypeOrmPlanRepository extends PlanRepository {
+export class TypeOrmPlanRepository
+  extends PlanRepository
+  implements PlanDefaultsEnsurer
+{
   constructor(
     @InjectRepository(PlanOrmEntity)
     private readonly plans: Repository<PlanOrmEntity>,
@@ -20,6 +24,11 @@ export class TypeOrmPlanRepository extends PlanRepository {
       where: { code: code.trim().toLowerCase() },
     });
     return row ? this.toDomain(row) : null;
+  }
+
+  async findAll(): Promise<Plan[]> {
+    const rows = await this.plans.find({ order: { code: 'ASC' } });
+    return rows.map((row) => this.toDomain(row));
   }
 
   async ensureDefaults(): Promise<void> {

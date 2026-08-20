@@ -3,7 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { PlanRepository } from '../../../../application/port/out/plan.repository';
 import { UserRepository } from '../../../../application/port/out/user.repository';
-import { EmailAlreadyInUseException } from '../../../../domain/exception/identity.exceptions';
+import {
+  EmailAlreadyInUseException,
+  InvalidPlanCodeException,
+  UserNotFoundException,
+} from '../../../../domain/exception/identity.exceptions';
 import { PLAN_CODES } from '../../../../domain/model/plan-codes';
 import { User } from '../../../../domain/model/user';
 import { UserOrmEntity } from './user.orm-entity';
@@ -25,7 +29,7 @@ export class TypeOrmUserRepository extends UserRepository {
   ): Promise<User> {
     const freePlan = await this.plans.findByCode(PLAN_CODES.free);
     if (!freePlan) {
-      throw new Error('Free plan is not configured');
+      throw new InvalidPlanCodeException();
     }
 
     try {
@@ -42,12 +46,15 @@ export class TypeOrmUserRepository extends UserRepository {
         relations: ['plan'],
       });
       if (!row) {
-        throw new Error('User not found after create');
+        throw new UserNotFoundException();
       }
       return this.toDomain(row);
     } catch (error) {
+      if (error instanceof EmailAlreadyInUseException) {
+        throw error;
+      }
       if (isUniqueViolation(error)) {
-        throw new EmailAlreadyInUseException(email);
+        throw new EmailAlreadyInUseException();
       }
       throw error;
     }
@@ -76,7 +83,7 @@ export class TypeOrmUserRepository extends UserRepository {
   ): Promise<User> {
     const plan = await this.plans.findByCode(planCode);
     if (!plan) {
-      throw new Error('Plan not found');
+      throw new InvalidPlanCodeException();
     }
 
     const result = await this.users.update(id, {
@@ -84,7 +91,7 @@ export class TypeOrmUserRepository extends UserRepository {
       planId: plan.id,
     });
     if (result.affected === 0) {
-      throw new Error('User not found');
+      throw new UserNotFoundException();
     }
 
     const reloaded = await this.users.findOne({
@@ -92,7 +99,7 @@ export class TypeOrmUserRepository extends UserRepository {
       relations: ['plan'],
     });
     if (!reloaded) {
-      throw new Error('User not found after update');
+      throw new UserNotFoundException();
     }
     return this.toDomain(reloaded);
   }

@@ -17,7 +17,7 @@ describe('UpdateUserSettingsUseCaseImpl', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useCase = new UpdateUserSettingsUseCaseImpl(users as never);
+    useCase = new UpdateUserSettingsUseCaseImpl(users);
   });
 
   it('updates preferred currency and plan', async () => {
